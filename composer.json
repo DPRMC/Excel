@@ -1,0 +1,19 @@
+{
+    "name": "dprmc/excel",
+    "description": "A php wrapper around the PhpSpreadsheet library.",
+    "type": "library",
+    "require": {
+        "phpoffice/phpspreadsheet": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Drennen",
+            "email": "mdrennen@deerparkrd.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
