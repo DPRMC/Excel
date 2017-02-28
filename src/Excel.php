@@ -45,6 +45,7 @@ class Excel{
             $path = self::getUniqueFilePath($path);
             self::initializeFile($path);
             self::setOptions($spreadsheet, $options);
+            self::setOrientationLandscape($spreadsheet);
             self::setHeaderRow($spreadsheet,$rows);
             self::setRows($spreadsheet, $rows);
             self::setFooterTotals($spreadsheet,$totals);
@@ -110,6 +111,11 @@ class Excel{
                     ->setDescription(self::$description)
                     ->setKeywords(self::$keywords)
                     ->setCategory(self::$category);
+    }
+
+    protected static function setOrientationLandscape(&$spreadsheet){
+        $spreadsheet->getActiveSheet()->getPageSetup()
+                    ->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
     }
 
     /**
