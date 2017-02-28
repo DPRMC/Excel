@@ -6,6 +6,10 @@ use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
+/**
+ * Class Excel
+ * @package DPRMC
+ */
 class Excel{
 
     static $title = 'Default Title';
@@ -27,6 +31,7 @@ class Excel{
     ];
 
     /**
+     * A wrapper around the PhpSpreadsheet library to make consistently formatted spreadsheets.
      * @param array $rows
      * @param array $totals
      * @param string $sheetName
