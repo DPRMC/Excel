@@ -22,11 +22,11 @@ class Excel{
     static $headerStyleArray = [
         'font' => [
             'bold' => true,
-            'color' => Color::COLOR_WHITE,
+            'color' => ['argb' => Color::COLOR_WHITE],
         ],
         'fill' => [
             'type' => Fill::FILL_SOLID,
-            'color' => Color::COLOR_DARKBLUE,
+            'color' => ['argb' => Color::COLOR_DARKBLUE],
         ]
     ];
 
@@ -70,8 +70,8 @@ class Excel{
             $filename_ext = pathinfo($startingPath,
                                      PATHINFO_EXTENSION);
             $startingPath = preg_replace('/^(.*)\.' . $filename_ext . '$/',
-                                                '$1_' . '_' . date('YmdHis') . '.' . $filename_ext,
-                                                $startingPath);
+                                         '$1_' . '_' . date('YmdHis') . '.' . $filename_ext,
+                                         $startingPath);
 
             if( is_null($startingPath) ){
                 throw new \Exception("The php function preg_replace (called in Excel::getUniqueFilePath()) returned null, indicating an error.");
@@ -121,17 +121,17 @@ class Excel{
         $startChar = 'A';
         foreach ($rows[0] as $field => $value) {
             $spreadsheet->setActiveSheetIndex(0)
-                  ->setCellValueExplicit($startChar . '1',
-                                         $field,
-                                         DataType::TYPE_STRING);
+                        ->setCellValueExplicit($startChar . '1',
+                                               $field,
+                                               DataType::TYPE_STRING);
 
             $spreadsheet->setActiveSheetIndex(0)
-                  ->getStyle($startChar . '1')
-                  ->applyFromArray(self::$headerStyleArray);
+                        ->getStyle($startChar . '1')
+                        ->applyFromArray(self::$headerStyleArray);
 
             $spreadsheet->setActiveSheetIndex(0)
-                  ->getColumnDimension($startChar)
-                  ->setAutoSize(true);
+                        ->getColumnDimension($startChar)
+                        ->setAutoSize(true);
 
             $startChar++;
         }
@@ -148,7 +148,7 @@ class Excel{
                 $iProperIndex = $i + 2; // The data should start one row below the header.
                 $cellCoordinate = $startChar . $iProperIndex;
                 $spreadsheet->setActiveSheetIndex(0)
-                                  ->setCellValueExplicit($cellCoordinate, $value);
+                            ->setCellValueExplicit($cellCoordinate, $value);
                 $startChar++;
             endforeach;
         endfor;
@@ -162,7 +162,7 @@ class Excel{
         // Create a map array by iterating through the headers
         $aHeaderMap = array();
         $lastColumn = $spreadsheet->setActiveSheetIndex(0)
-                                        ->getHighestColumn();
+                                  ->getHighestColumn();
         $lastColumn++; //Because of the != iterator below, we need to tell it to stop one AFTER the last column. Or we could change it to a doWhile loop... This was easier.
 
 
@@ -173,14 +173,14 @@ class Excel{
 
         for ($c = $startColumn; $c != $lastColumn; $c++):
             $cellValue = $spreadsheet->setActiveSheetIndex(0)
-                                           ->getCell($c . 1)
-                                           ->getValue();
+                                     ->getCell($c . 1)
+                                     ->getValue();
             $aHeaderMap[$c] = $cellValue;
         endfor;
 
 
         $lastRow = $spreadsheet->setActiveSheetIndex(0)
-                                     ->getHighestRow();
+                               ->getHighestRow();
         $footerRowStart = $lastRow + 1;
 
         foreach ($totals as $field => $value):
@@ -198,12 +198,12 @@ class Excel{
                 $multiDimensionalFooterRow = $footerRowStart;
                 foreach ($value as $name => $childValue):
                     $spreadsheet->setActiveSheetIndex(0)
-                                      ->setCellValueExplicit($columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_STRING);
+                                ->setCellValueExplicit($columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_STRING);
                     $multiDimensionalFooterRow++;
                 endforeach;
             else:
                 $spreadsheet->setActiveSheetIndex(0)
-                                  ->setCellValueExplicit($columnLetter . $footerRowStart, $value, DataType::TYPE_STRING);
+                            ->setCellValueExplicit($columnLetter . $footerRowStart, $value, DataType::TYPE_STRING);
             endif;
 
         endforeach;
@@ -221,8 +221,8 @@ class Excel{
      * @param $path
      * @param string $format
      */
-    protected static function writeSpreadsheet($spreadsheet, $path, $format='Xlsx'){
-        $writer = IOFactory::createWriter($spreadsheet, $format);
+    protected static function writeSpreadsheet($spreadsheet, $path){
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Excel2007($spreadsheet);
         $writer->save($path);
     }
 }
