@@ -15,5 +15,8 @@
             "email": "mdrennen@deerparkrd.com"
         }
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {"DPRMC\\Excel\\": "src/"}
+    }
 }
