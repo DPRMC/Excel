@@ -18,8 +18,6 @@ This library will take the keys from the $rows array, and make those the column 
 
 <code>
 
-
-
         $rows = [];
         foreach($prices as $price):
             $rows[] = [
@@ -61,7 +59,5 @@ This library will take the keys from the $rows array, and make those the column 
         ];
 
         $path = \DPRMC\Excel::simple($rows,$totals,'Pricing_Update',$outputPath,$options);
-
-
 
 </code>
