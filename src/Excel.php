@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 
 /**
  * Class Excel
@@ -41,6 +42,7 @@ class Excel {
      * @param string $path
      * @param array  $options
      *
+     * @return string
      * @throws \Exception
      */
     public static function simple( $rows = [], $totals = [], $sheetName = 'worksheet', $path = '', $options = [] ) {
@@ -91,6 +93,8 @@ class Excel {
 
     /**
      * @param string $path The destination file path.
+     *
+     * @throws UnableToInitializeOutputFile
      */
     protected static function initializeFile( $path ) {
         $bytes_written = file_put_contents( $path, '' );
@@ -127,12 +131,12 @@ class Excel {
     protected static function setOrientationLandscape( &$spreadsheet ) {
         $spreadsheet->getActiveSheet()
                     ->getPageSetup()
-                    ->setOrientation( \PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE );
+                    ->setOrientation( PageSetup::ORIENTATION_LANDSCAPE );
     }
 
     /**
-     * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet
-     * @param array                                 $rows
+     * @param Spreadsheet $spreadsheet
+     * @param array       $rows
      */
     protected static function setHeaderRow( &$spreadsheet, $rows = [] ) {
         // Set header row
@@ -171,8 +175,10 @@ class Excel {
     }
 
     /**
-     * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet
-     * @param                                       $totals
+     * @param Spreadsheet $spreadsheet
+     * @param array       $totals
+     *
+     * @throws \Exception
      */
     protected static function setFooterTotals( &$spreadsheet, $totals ) {
         // Create a map array by iterating through the headers
@@ -181,11 +187,7 @@ class Excel {
                                   ->getHighestColumn();
         $lastColumn++; //Because of the != iterator below, we need to tell it to stop one AFTER the last column. Or we could change it to a doWhile loop... This was easier.
 
-
         $startColumn = 'A';
-
-        //Log::error("startColumn: " . $startColumn);
-        //Log::error("lastColumn: " . $lastColumn++);
 
         for ( $c = $startColumn; $c != $lastColumn; $c++ ):
             $cellValue        = $spreadsheet->setActiveSheetIndex( 0 )
@@ -226,7 +228,8 @@ class Excel {
     }
 
     /**
-     * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet
+     * @param Spreadsheet $spreadsheet
+     * @param string      $worksheetName
      */
     protected static function setWorksheetTitle( &$spreadsheet, $worksheetName = 'worksheet' ) {
         $spreadsheet->getActiveSheet()
