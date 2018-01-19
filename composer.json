@@ -3,7 +3,7 @@
   "description": "A php wrapper around the PhpSpreadsheet library.",
   "type": "library",
   "require": {
-    "phpoffice/phpspreadsheet": "dev-master"
+    "phpoffice/phpspreadsheet": "^1.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.7"
@@ -15,7 +15,7 @@
       "email": "mdrennen@deerparkrd.com"
     }
   ],
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "autoload": {
     "classmap": [
       "src/"
