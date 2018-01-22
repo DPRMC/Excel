@@ -3,7 +3,8 @@
   "description": "A php wrapper around the PhpSpreadsheet library.",
   "type": "library",
   "require": {
-    "phpoffice/phpspreadsheet": "^1.0"
+    "phpoffice/phpspreadsheet": "^1.0",
+    "mikey179/vfsStream": "^1.6"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.7"
