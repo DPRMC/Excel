@@ -28,7 +28,7 @@ class Excel {
 
     static $category = 'category';
 
-    static $headerStyleArray = [ 'font' => [ 'bold'  => TRUE,
+    static $headerStyleArray = [ 'font' => [ 'bold'  => true,
                                              'color' => [ 'argb' => Color::COLOR_WHITE ], ],
                                  'fill' => [ 'type'  => Fill::FILL_SOLID,
                                              'color' => [ 'argb' => Color::COLOR_DARKBLUE ], ] ];
@@ -81,7 +81,7 @@ class Excel {
     protected static function getUniqueFilePath( $startingPath = '' ) {
         if ( file_exists( $startingPath ) ) {
             $filename_ext = pathinfo( $startingPath, PATHINFO_EXTENSION );
-            $startingPath = preg_replace( '/^(.*)\.' . $filename_ext . '$/', '$1_' . '_' . date( 'YmdHis' ) . '.' . $filename_ext, $startingPath );
+            $startingPath = preg_replace( '/^(.*)\.' . $filename_ext . '$/', '$1_' . date( 'YmdHis' ) . '.' . $filename_ext, $startingPath );
 
             if ( is_null( $startingPath ) ) {
                 throw new \Exception( "The php function preg_replace (called in Excel::getUniqueFilePath()) returned null, indicating an error." );
@@ -98,7 +98,7 @@ class Excel {
      */
     protected static function initializeFile( $path ) {
         $bytes_written = file_put_contents( $path, '' );
-        if ( $bytes_written === FALSE ):
+        if ( $bytes_written === false ):
             throw new UnableToInitializeOutputFile( "Unable to write to the file at " . $path );
         endif;
     }
@@ -127,6 +127,8 @@ class Excel {
 
     /**
      * @param Spreadsheet $spreadsheet
+     *
+     * @throws \Exception
      */
     protected static function setOrientationLandscape( &$spreadsheet ) {
         $spreadsheet->getActiveSheet()
@@ -135,8 +137,10 @@ class Excel {
     }
 
     /**
-     * @param Spreadsheet $spreadsheet
-     * @param array       $rows
+     * @param       Spreadsheet $spreadsheet
+     * @param array             $rows
+     *
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     protected static function setHeaderRow( &$spreadsheet, $rows = [] ) {
         // Set header row
@@ -151,7 +155,7 @@ class Excel {
 
             $spreadsheet->setActiveSheetIndex( 0 )
                         ->getColumnDimension( $startChar )
-                        ->setAutoSize( TRUE );
+                        ->setAutoSize( true );
 
             $startChar++;
         }
@@ -206,8 +210,8 @@ class Excel {
             // Find the matching value in row one...
             $columnLetter = array_search( $field, $aHeaderMap );
 
-            if ( $columnLetter === FALSE ):
-                throw new \Exception( "EXCEPTION: " . $field . " was not found in " . print_r( $aHeaderMap, TRUE ) );
+            if ( $columnLetter === false ):
+                throw new \Exception( "EXCEPTION: " . $field . " was not found in " . print_r( $aHeaderMap, true ) );
             endif;
 
 

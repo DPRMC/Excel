@@ -5,27 +5,28 @@ use PHPUnit\Framework\TestCase;
 
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
 
 class ExcelTest extends TestCase {
 
     public function testToArrayCreatesHeader() {
 
-        $vfsRootDirObject = vfsStream::setup( 'root', null, [
-            'test' => [
-                'test.txt' => 'test content',
-            ],
+        vfsStream::setup( 'root', 0777, [
+            'test.xlsx' => '',
         ] );
-        file_put_contents( $vfsRootDirObject->url() . '/test.txt', 'test' );
 
-        $rows      = [
+        print_r( vfsStream::inspect( new vfsStreamStructureVisitor() )->getStructure() );
+
+        $rows[]    = [
             'CUSIP'  => '123456789',
             'DATE'   => '2018-01-01',
             'ACTION' => 'BUY',
         ];
         $totals    = [];
         $sheetName = 'testOutput.xlsx';
-        $path      = $vfsRootDirObject->url();
-        $options   = [];
+        //$path      = $vfsRootDirObject->url();
+        $path    = vfsStream::url( 'root' ) . '/test.xlsx';
+        $options = [];
 
         $pathToFile = Excel::simple( $rows, $totals, $sheetName, $path, $options );
 
