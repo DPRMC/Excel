@@ -9,8 +9,8 @@ use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
 
 class ExcelTest extends TestCase {
 
-    protected $pathToOutputDirectory = '/tests/test_files/output/';
-    protected $pathToOutputFile = '/tests/test_files/output/testOutput.xlsx';
+    protected $pathToOutputDirectory = './tests/test_files/output/';
+    protected $pathToOutputFile = './tests/test_files/output/testOutput.xlsx';
 
     public function tearDown() {
         $files = scandir( $this->pathToOutputDirectory );
