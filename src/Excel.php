@@ -28,10 +28,20 @@ class Excel {
 
     static $category = 'category';
 
-    static $headerStyleArray = [ 'font' => [ 'bold'  => true,
-                                             'color' => [ 'argb' => Color::COLOR_WHITE ], ],
-                                 'fill' => [ 'type'  => Fill::FILL_SOLID,
-                                             'color' => [ 'argb' => Color::COLOR_DARKBLUE ], ] ];
+    static $headerStyleArray = [
+        'fill' => [
+            'fillType' => Fill::FILL_SOLID,
+            'color'    => [
+                'argb' => Color::COLOR_DARKBLUE,
+            ],
+        ],
+        'font' => [
+            'bold'  => true,
+            'color' => [
+                'argb' => Color::COLOR_WHITE,
+            ],
+        ],
+    ];
 
     /**
      * A wrapper around the PhpSpreadsheet library to make consistently formatted spreadsheets.
@@ -65,6 +75,22 @@ class Excel {
         }
 
         return $path;
+    }
+
+    /**
+     * @param string $path
+     * @param int    $sheetIndex
+     *
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public static function sheetToArray( $path, $sheetIndex = 0 ) {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader->setLoadSheetsOnly( [ 0 ] );
+        $spreadsheet = $reader->load( $path );
+
+        return $spreadsheet->setActiveSheetIndex( $sheetIndex )->toArray();
     }
 
 
@@ -136,12 +162,7 @@ class Excel {
                     ->setOrientation( PageSetup::ORIENTATION_LANDSCAPE );
     }
 
-    /**
-     * @param       Spreadsheet $spreadsheet
-     * @param array             $rows
-     *
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     */
+
     protected static function setHeaderRow( &$spreadsheet, $rows = [] ) {
         // Set header row
         $startChar = 'A';
@@ -161,10 +182,7 @@ class Excel {
         }
     }
 
-    /**
-     * @param \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet
-     * @param array                                 $rows
-     */
+
     protected static function setRows( &$spreadsheet, $rows ) {
         for ( $i = 0; $i < count( $rows ); $i++ ):
             $startChar = 'A';
@@ -234,6 +252,8 @@ class Excel {
     /**
      * @param Spreadsheet $spreadsheet
      * @param string      $worksheetName
+     *
+     * @throws \PhpOffice\PhpSpreadsheet\Exception;
      */
     protected static function setWorksheetTitle( &$spreadsheet, $worksheetName = 'worksheet' ) {
         $spreadsheet->getActiveSheet()
@@ -243,6 +263,8 @@ class Excel {
     /**
      * @param Spreadsheet $spreadsheet
      * @param string      $path
+     *
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     protected static function writeSpreadsheet( $spreadsheet, $path ) {
         $writer = new Xlsx( $spreadsheet );

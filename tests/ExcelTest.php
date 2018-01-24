@@ -9,29 +9,65 @@ use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
 
 class ExcelTest extends TestCase {
 
+    protected $pathToOutputDirectory = './tests/test_files/output/';
+    protected $pathToOutputFile = './tests/test_files/output/testOutput.xlsx';
+
+    public function tearDown() {
+        $files = scandir( $this->pathToOutputDirectory );
+        array_shift( $files ); // .
+        array_shift( $files ); // ..
+        foreach ( $files as $file ):
+            unlink( $this->pathToOutputDirectory . $file );
+        endforeach;
+    }
+
     public function testToArrayCreatesHeader() {
-
-        vfsStream::setup( 'root', 0777, [
-            'test.xlsx' => '',
-        ] );
-
-        print_r( vfsStream::inspect( new vfsStreamStructureVisitor() )->getStructure() );
-
-        $rows[]    = [
+        $rows[]     = [
             'CUSIP'  => '123456789',
             'DATE'   => '2018-01-01',
             'ACTION' => 'BUY',
         ];
-        $totals    = [];
-        $sheetName = 'testOutput.xlsx';
-        //$path      = $vfsRootDirObject->url();
-        $path    = vfsStream::url( 'root' ) . '/test.xlsx';
-        $options = [];
+        $totals     = [
+            'CUSIP'  => '1',
+            'DATE'   => '2',
+            'ACTION' => '3',
+        ];
+        $options    = [];
+        $sheetName  = 'testOutput.xlsx';
+        $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
 
-        $pathToFile = Excel::simple( $rows, $totals, $sheetName, $path, $options );
+        $sheetAsArray = Excel::sheetToArray( $pathToFile );
 
-        echo $pathToFile;
+        $this->assertEquals( 'CUSIP', $sheetAsArray[ 0 ][ 0 ] );
 
+        $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
+        $files      = scandir( $this->pathToOutputDirectory );
+        array_shift( $files ); // .
+        array_shift( $files ); // ..
+        $this->assertCount( 2, $files );
 
     }
+
+
+    public function testCreating() {
+        $rows[]     = [
+            'CUSIP'  => '123456789',
+            'DATE'   => '2018-01-01',
+            'ACTION' => 'BUY',
+        ];
+        $totals     = [
+            'CUSIP'  => '1',
+            'DATE'   => '2',
+            'ACTION' => '3',
+        ];
+        $options    = [];
+        $sheetName  = 'testOutput.xlsx';
+        $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
+
+        $sheetAsArray = Excel::sheetToArray( $pathToFile );
+
+        $this->assertEquals( 'CUSIP', $sheetAsArray[ 0 ][ 0 ] );
+    }
+
+
 }
