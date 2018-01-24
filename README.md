@@ -1,13 +1,12 @@
 # Excel
 
-[![Latest Stable Version](https://poser.pugx.org/dprmc/excel/version)](https://packagist.org/packages/dprmc/excel) [![Build Status](https://travis-ci.org/DPRMC/Excel.svg?branch=master)](https://travis-ci.org/DPRMC/Excel) [![Total Downloads](https://poser.pugx.org/dprmc/excel/downloads)](https://packagist.org/packages/dprmc/excel) [![License](https://poser.pugx.org/dprmc/excel/license)](https://packagist.org/packages/dprmc/excel)  
+[![Latest Stable Version](https://poser.pugx.org/dprmc/excel/version)](https://packagist.org/packages/dprmc/excel) [![Build Status](https://travis-ci.org/DPRMC/Excel.svg?branch=master)](https://travis-ci.org/DPRMC/Excel) [![Total Downloads](https://poser.pugx.org/dprmc/excel/downloads)](https://packagist.org/packages/dprmc/excel) [![License](https://poser.pugx.org/dprmc/excel/license)](https://packagist.org/packages/dprmc/excel) [![Build Status](https://travis-ci.org/DPRMC/Excel.svg?branch=master)](https://travis-ci.org/DPRMC/Excel) [![Coverage Status](https://coveralls.io/repos/github/DPRMC/Excel/badge.svg?branch=master)](https://coveralls.io/github/DPRMC/Excel?branch=master)  
 
 A php library that is a wrapper around the PhpSpreadsheet library. 
 
 <code>composer require dprmc/excel</code>
 
-## Usage
-
+## Usage: Create a Simple Spreadsheet
 Below is an example showing usage of this class.
 
 You can see we create a couple of associative arrays:
@@ -16,48 +15,32 @@ You can see we create a couple of associative arrays:
 
 This library will take the keys from the $rows array, and make those the column headers.
 
-<code>
+If the output file already exists, this method will append a timestamp at the end to try to make a unique filename.
 
-        $rows = [];
-        foreach($prices as $price):
-            $rows[] = [
-                'scheme_identifier' => $price->cusip,
-                'scheme_name' => 'CUSIP',
-                'market_data_authority_name' => 'ABC',
-                'action' => 'ADDUPDATE',
-                'as_of_date' => date('n/d/Y', strtotime($price->date)),
-                'price' => $price->price
-            ];
-        endforeach;
-        
-        $totals = [
-            'scheme_identifier' = '',
-            'scheme_name' => '',
-            'market_data_authority_name' => '',
-            'action' => '',
-            'as_of_date' => '',
-            'price' => ''
-        ];
-        foreach($prices as $price):
-            $rows[] = [
-                'scheme_identifier' => $price->cusip,
-                'scheme_name' => 'CUSIP',
-                'market_data_authority_name' => 'ABC',
-                'action' => 'ADDUPDATE',
-                'as_of_date' => date('n/d/Y', strtotime($price->date)),
-                'price' => $price->price
-            ];
-        endforeach;
-        
+```php
+$rows[]     = [
+    'CUSIP'  => '123456789',
+    'DATE'   => '2018-01-01',
+    'ACTION' => 'BUY',
+];
+$totals     = [
+    'CUSIP'  => '1',
+    'DATE'   => '2',
+    'ACTION' => '3',
+];
+$options = [
+    'title'    => "Sample Title,
+    'subject'  => "CUSIP List",
+    'category' => "Back Office",
+];
 
-        $outputPath = storage_path() . '/report_' . $date. '.xlsx';
-        
-        $options = [
-            'title' => "Update Template - Month End Pricing - " . $date,
-            'subject' => "Month End Pricing",
-            'category' => "Month End Pricing",
-        ];
+$pathToFile = Excel::simple( $rows, $totals, "Tab Label", '/outputFile.xlsx', $options );
 
-        $path = \DPRMC\Excel::simple($rows,$totals,'Pricing_Update',$outputPath,$options);
+```
 
-</code>
+## Usage: Reading a Spreadsheet into a PHP Array
+Pass in the path to an XLSX spreadsheet and a sheet index number (defaults to 0), and this method will return an associative array.
+```php
+$array = Excel::sheetToArray('/outputFile.xlsx', 0);
+print_r($array);
+```

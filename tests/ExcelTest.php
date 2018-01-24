@@ -3,10 +3,6 @@
 use DPRMC\Excel;
 use PHPUnit\Framework\TestCase;
 
-use org\bovigo\vfs\vfsStreamDirectory;
-use org\bovigo\vfs\vfsStream;
-use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
-
 class ExcelTest extends TestCase {
 
     protected $pathToOutputDirectory = './tests/test_files/output/';
@@ -45,29 +41,5 @@ class ExcelTest extends TestCase {
         array_shift( $files ); // .
         array_shift( $files ); // ..
         $this->assertCount( 3, $files ); // My two test files and a blank file used to force the creation
-
     }
-
-
-    public function testCreating() {
-        $rows[]     = [
-            'CUSIP'  => '123456789',
-            'DATE'   => '2018-01-01',
-            'ACTION' => 'BUY',
-        ];
-        $totals     = [
-            'CUSIP'  => '1',
-            'DATE'   => '2',
-            'ACTION' => '3',
-        ];
-        $options    = [];
-        $sheetName  = 'testOutput.xlsx';
-        $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
-
-        $sheetAsArray = Excel::sheetToArray( $pathToFile );
-
-        $this->assertEquals( 'CUSIP', $sheetAsArray[ 0 ][ 0 ] );
-    }
-
-
 }
