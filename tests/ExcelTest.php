@@ -18,22 +18,27 @@ class ExcelTest extends TestCase {
     }
 
     public function testToArrayCreatesHeader() {
-        $rows[]     = [
+        $rows[]    = [
             'CUSIP'  => '123456789',
             'DATE'   => '2018-01-01',
             'ACTION' => 'BUY',
         ];
-        $totals     = [
+        $totals    = [
             'CUSIP'  => '1',
             'DATE'   => '2',
             'ACTION' => '3',
         ];
-        $options    = [];
-        $sheetName  = 'testOutput.xlsx';
+        $options   = [];
+        $sheetName = 'testOutput.xlsx';
 
         var_dump( getcwd() );
         $files = scandir( getcwd() );
         print_r( $files );
+
+        $files = scandir( $this->pathToOutputDirectory );
+        print_r( $files );
+        var_dump( fileperms( $this->pathToOutputDirectory ) );
+
 
         $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
 
