@@ -30,6 +30,11 @@ class ExcelTest extends TestCase {
         ];
         $options    = [];
         $sheetName  = 'testOutput.xlsx';
+
+        var_dump( getcwd() );
+        $files = scandir( getcwd() );
+        print_r( $files );
+
         $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
 
         $sheetAsArray = Excel::sheetToArray( $pathToFile );
