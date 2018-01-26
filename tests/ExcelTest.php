@@ -1,5 +1,5 @@
 <?php
-
+namespace DPRMC\Excel\Tests;
 use DPRMC\Excel;
 use PHPUnit\Framework\TestCase;
 
