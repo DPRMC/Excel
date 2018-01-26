@@ -31,15 +31,6 @@ class ExcelTest extends TestCase {
         $options   = [];
         $sheetName = 'testOutput.xlsx';
 
-        var_dump( getcwd() );
-        $files = scandir( getcwd() );
-        print_r( $files );
-
-        $files = scandir( $this->pathToOutputDirectory );
-        print_r( $files );
-        var_dump( fileperms( $this->pathToOutputDirectory ) );
-
-
         $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
 
         $sheetAsArray = Excel::sheetToArray( $pathToFile );
@@ -51,8 +42,6 @@ class ExcelTest extends TestCase {
         array_shift( $files ); // .
         array_shift( $files ); // ..
 
-        //print_r($files);
-
-        $this->assertCount( 2, $files ); // My two test files and a blank file used to force the creation
+        $this->assertCount( 3, $files ); // My two test files and the gitignore
     }
 }
