@@ -31,6 +31,7 @@ class ExcelTest extends TestCase {
         $options   = [];
         $sheetName = 'testOutput.xlsx';
 
+
         $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
 
         $sheetAsArray = Excel::sheetToArray( $pathToFile );
@@ -41,6 +42,7 @@ class ExcelTest extends TestCase {
         $files      = scandir( $this->pathToOutputDirectory );
         array_shift( $files ); // .
         array_shift( $files ); // ..
+
 
         $this->assertCount( 3, $files ); // My two test files and the gitignore
     }
