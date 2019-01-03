@@ -30,7 +30,7 @@ class ExcelTest extends TestCase {
     public function setUp() {
         self::$vfsRootDirObject         = vfsStream::setup( self::VFS_ROOT_DIR );
         self::$unreadableSourceFilePath = vfsStream::url( self::VFS_ROOT_DIR . DIRECTORY_SEPARATOR . self::UNWRITEABLE_DIR_NAME );
-        chmod( self::$unreadableSourceFilePath, '0100' );
+        chmod( self::$unreadableSourceFilePath, '0000' );
     }
 
 
