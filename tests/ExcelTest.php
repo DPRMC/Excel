@@ -82,9 +82,6 @@ class ExcelTest extends TestCase {
      * @test
      */
     public function unableToInitializeFileShouldThrowException() {
-
-
-
         $this->expectException( \Exception::class );
 
         $rows[]    = [
@@ -101,7 +98,6 @@ class ExcelTest extends TestCase {
         $sheetName = 'testOutput.xlsx';
 
         Excel::simple( $rows, $totals, $sheetName, self::$unreadableSourceFilePath, $options );
-
     }
 
 
