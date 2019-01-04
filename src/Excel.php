@@ -267,7 +267,12 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     protected static function writeSpreadsheet( $spreadsheet, $path ) {
-        $writer = new Xlsx( $spreadsheet );
-        $writer->save( $path );
+        try {
+            $writer = new Xlsx( $spreadsheet );
+            $writer->save( $path );
+        } catch ( \Exception $exception ) {
+            throw new \Exception( $exception->getMessage() );
+        }
+
     }
 }

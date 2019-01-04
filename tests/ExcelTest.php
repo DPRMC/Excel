@@ -85,7 +85,7 @@ class ExcelTest extends TestCase {
 
 
 
-        $this->expectException( \PhpOffice\PhpSpreadsheet\Exception::class );
+        $this->expectException( \Exception::class );
 
         $rows[]    = [
             'CUSIP'  => '123456789',
