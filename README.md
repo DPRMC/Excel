@@ -1,4 +1,4 @@
-# Excel
+# Excel v2
 
 [![Latest Stable Version](https://poser.pugx.org/dprmc/excel/version)](https://packagist.org/packages/dprmc/excel) [![Build Status](https://travis-ci.org/DPRMC/Excel.svg?branch=master)](https://travis-ci.org/DPRMC/Excel) [![Total Downloads](https://poser.pugx.org/dprmc/excel/downloads)](https://packagist.org/packages/dprmc/excel) [![License](https://poser.pugx.org/dprmc/excel/license)](https://packagist.org/packages/dprmc/excel) [![Build Status](https://travis-ci.org/DPRMC/Excel.svg?branch=master)](https://travis-ci.org/DPRMC/Excel) [![Coverage Status](https://coveralls.io/repos/github/DPRMC/Excel/badge.svg?branch=master)](https://coveralls.io/github/DPRMC/Excel?branch=master)  
 
