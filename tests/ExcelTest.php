@@ -97,7 +97,12 @@ class ExcelTest extends TestCase {
         $options   = [];
         $sheetName = 'testOutput.xlsx';
 
-        Excel::simple( $rows, $totals, $sheetName, self::$unreadableSourceFilePath, $options );
+        try{
+            Excel::simple( $rows, $totals, $sheetName, self::$unreadableSourceFilePath, $options );
+        } catch (\Exception $exception){
+            throw $exception;
+        }
+
     }
 
 
