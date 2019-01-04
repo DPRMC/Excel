@@ -82,7 +82,10 @@ class ExcelTest extends TestCase {
      * @test
      */
     public function unableToInitializeFileShouldThrowException() {
-        $this->expectException( \Exception::class );
+
+
+
+        $this->expectException( \PhpOffice\PhpSpreadsheet\Exception::class );
 
         $rows[]    = [
             'CUSIP'  => '123456789',
@@ -97,11 +100,7 @@ class ExcelTest extends TestCase {
         $options   = [];
         $sheetName = 'testOutput.xlsx';
 
-        try{
-            Excel::simple( $rows, $totals, $sheetName, self::$unreadableSourceFilePath, $options );
-        } catch (\Exception $exception){
-            throw $exception;
-        }
+        Excel::simple( $rows, $totals, $sheetName, self::$unreadableSourceFilePath, $options );
 
     }
 
