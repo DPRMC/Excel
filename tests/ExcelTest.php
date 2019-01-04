@@ -82,7 +82,7 @@ class ExcelTest extends TestCase {
      * @test
      */
     public function unableToInitializeFileShouldThrowException() {
-        $this->expectException( \PhpOffice\PhpSpreadsheet\Writer\Exception::class );
+        $this->expectException( \Exception::class );
 
         $rows[]    = [
             'CUSIP'  => '123456789',
