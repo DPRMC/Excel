@@ -36,7 +36,7 @@ class Excel {
             ],
         ],
         'font' => [
-            'bold'  => true,
+            'bold'  => TRUE,
             'color' => [
                 'argb' => Color::COLOR_WHITE,
             ],
@@ -46,16 +46,16 @@ class Excel {
     /**
      * A wrapper around the PhpSpreadsheet library to make consistently formatted spreadsheets.
      *
-     * @param array  $rows
-     * @param array  $totals
+     * @param array $rows
+     * @param array $totals
      * @param string $sheetName
      * @param string $path
-     * @param array  $options
+     * @param array $options
      *
      * @return string
      * @throws \Exception
      */
-    public static function simple( $rows = [], $totals = [], $sheetName = 'worksheet', $path = '', $options = [] ) {
+    public static function simple( array $rows = [], array $totals = [], string $sheetName = 'worksheet', string $path = '', array $options = [] ) {
         try {
             /**
              * @var Spreadsheet $spreadsheet
@@ -79,7 +79,7 @@ class Excel {
 
     /**
      * @param string $path
-     * @param int    $sheetIndex
+     * @param int $sheetIndex
      *
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
@@ -124,7 +124,7 @@ class Excel {
      */
     protected static function initializeFile( $path ) {
         $bytes_written = file_put_contents( $path, '' );
-        if ( $bytes_written === false ):
+        if ( $bytes_written === FALSE ):
             throw new UnableToInitializeOutputFile( "Unable to write to the file at " . $path );
         endif;
     }
@@ -134,12 +134,12 @@ class Excel {
      * @param                                       $options
      */
     protected static function setOptions( &$spreadsheet, $options = [] ) {
-        self::$title       = isset( $options[ 'title' ] ) ? $options[ 'title' ] : self::$title;
-        self::$subject     = isset( $options[ 'subject' ] ) ? $options[ 'subject' ] : self::$subject;
-        self::$creator     = isset( $options[ 'creator' ] ) ? $options[ 'creator' ] : self::$creator;
-        self::$description = isset( $options[ 'description' ] ) ? $options[ 'description' ] : self::$description;
-        self::$keywords    = isset( $options[ 'keywords' ] ) ? $options[ 'keywords' ] : self::$keywords;
-        self::$category    = isset( $options[ 'category' ] ) ? $options[ 'category' ] : self::$category;
+        self::$title       = $options[ 'title' ] ?? self::$title;
+        self::$subject     = $options[ 'subject' ] ?? self::$subject;
+        self::$creator     = $options[ 'creator' ] ?? self::$creator;
+        self::$description = $options[ 'description' ] ?? self::$description;
+        self::$keywords    = $options[ 'keywords' ] ?? self::$keywords;
+        self::$category    = $options[ 'category' ] ?? self::$category;
 
         $spreadsheet->getProperties()
                     ->setCreator( self::$creator )
@@ -176,7 +176,7 @@ class Excel {
 
             $spreadsheet->setActiveSheetIndex( 0 )
                         ->getColumnDimension( $startChar )
-                        ->setAutoSize( true );
+                        ->setAutoSize( TRUE );
 
             $startChar++;
         }
@@ -198,7 +198,7 @@ class Excel {
 
     /**
      * @param Spreadsheet $spreadsheet
-     * @param array       $totals
+     * @param array $totals
      *
      * @throws \Exception
      */
@@ -228,8 +228,8 @@ class Excel {
             // Find the matching value in row one...
             $columnLetter = array_search( $field, $aHeaderMap );
 
-            if ( $columnLetter === false ):
-                throw new \Exception( "EXCEPTION: " . $field . " was not found in " . print_r( $aHeaderMap, true ) );
+            if ( $columnLetter === FALSE ):
+                throw new \Exception( "EXCEPTION: " . $field . " was not found in " . print_r( $aHeaderMap, TRUE ) );
             endif;
 
 
@@ -251,7 +251,7 @@ class Excel {
 
     /**
      * @param Spreadsheet $spreadsheet
-     * @param string      $worksheetName
+     * @param string $worksheetName
      *
      * @throws \PhpOffice\PhpSpreadsheet\Exception;
      */
@@ -262,12 +262,17 @@ class Excel {
 
     /**
      * @param Spreadsheet $spreadsheet
-     * @param string      $path
+     * @param string $path
      *
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
     protected static function writeSpreadsheet( $spreadsheet, $path ) {
-        $writer = new Xlsx( $spreadsheet );
-        $writer->save( $path );
+        try {
+            $writer = new Xlsx( $spreadsheet );
+            $writer->save( $path );
+        } catch ( \Exception $exception ) {
+            throw new \Exception( $exception->getMessage() );
+        }
+
     }
 }
