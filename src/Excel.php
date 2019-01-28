@@ -57,6 +57,7 @@ class Excel {
      */
     public static function simple( array $rows = [], array $totals = [], string $sheetName = 'worksheet', string $path = '', array $options = [] ) {
         try {
+
             /**
              * @var Spreadsheet $spreadsheet
              */
@@ -164,6 +165,12 @@ class Excel {
 
 
     protected static function setHeaderRow( &$spreadsheet, $rows = [] ) {
+
+        // I guess you want to create a blank spreadsheet. Go right ahead.
+        if( empty($rows) ):
+            return;
+        endif;
+
         // Set header row
         $startChar = 'A';
         foreach ( $rows[ 0 ] as $field => $value ) {
