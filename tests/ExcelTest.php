@@ -148,5 +148,53 @@ class ExcelTest extends TestCase {
     }
 
 
+    /**
+     * @test
+     * @group split
+     */
+    public function splitSheetShouldReturnArrayOfFilePaths() {
+        $rows = [];
+        for ( $i = 0; $i < 10; $i++ ):
+            $rows[] = [
+                'CUSIP'  => '123456789',
+                'DATE'   => '2018-01-01',
+                'ACTION' => 'BUY',
+            ];
+        endfor;
+        $sourceSheetPath = Excel::simple( $rows, [], 'test', $this->pathToOutputFile, [] );
+        $filePaths       = Excel::splitSheet( $sourceSheetPath, 0, 6 );
+
+        $this->assertCount( 2, $filePaths );
+    }
+
+
+    /**
+     * @test
+     */
+    public function numLinesInSheetShouldReturnTheNumberOfLines() {
+        $rows = [];
+        for ( $i = 0; $i < 10; $i++ ):
+            $rows[] = [
+                'CUSIP'  => '123456789',
+                'DATE'   => '2018-01-01',
+                'ACTION' => 'BUY',
+            ];
+        endfor;
+        $sourceSheetPath = Excel::simple( $rows, [], 'test', $this->pathToOutputFile, [] );
+        $numLinesInSheet = Excel::numLinesInSheet( $sourceSheetPath, 0 );
+        $this->assertEquals( 11, $numLinesInSheet );
+    }
+
+    /**
+     * @test
+     * @group death
+     */
+    public function creatingEmptySpreadsheetShouldNotThrowException() {
+        $sourceSheetPath = Excel::simple( [], [], 'test', $this->pathToOutputFile, [] );
+        $numLinesInSheet = Excel::numLinesInSheet( $sourceSheetPath, 0 );
+        $array           = Excel::sheetToArray( $sourceSheetPath, 0 );
+        $this->assertEquals( 0, $numLinesInSheet );
+    }
+
 
 }

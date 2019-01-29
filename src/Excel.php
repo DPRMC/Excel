@@ -90,7 +90,6 @@ class Excel {
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $reader->setLoadSheetsOnly( [ 0 ] );
         $spreadsheet = $reader->load( $path );
-
         return $spreadsheet->setActiveSheetIndex( $sheetIndex )->toArray();
     }
 
@@ -103,8 +102,44 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
     public static function numLinesInSheet( $path, $sheetIndex = 0 ): int {
-        $sheetAsArray = self::sheetToArray( $path, $sheetIndex );
+        $emptySheetAsArray = [
+            0 => [
+                0 => NULL,
+            ],
+        ];
+        $sheetAsArray      = self::sheetToArray( $path, $sheetIndex );
+        if ( $sheetAsArray == $emptySheetAsArray ):
+            return 0;
+        endif;
         return count( $sheetAsArray );
+    }
+
+
+    public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
+        $pathsToSplitFiles = [];
+        $sheetAsArray      = self::sheetToArray( $path, $sheetIndex );
+        $header            = array_shift( $sheetAsArray );
+        $chunks            = array_chunk( $sheetAsArray, $maxLinesPerFile );
+        foreach ( $chunks as $i => $chunk ):
+            $chunk               = self::setHeadersAsIndexes( $chunk, $header );
+            $pathsToSplitFiles[] = self::simple( $chunk, [], 'split', tempnam( NULL, 'split_' . $i ), [] );
+        endforeach;
+        return $pathsToSplitFiles;
+    }
+
+    /**
+     * @param array $rows
+     * @param array $headers
+     * @return array
+     */
+    protected static function setHeadersAsIndexes( array $rows, array $headers ): array {
+        $modifiedRows = [];
+        foreach ( $rows as $i => $row ):
+            foreach ( $row as $j => $value ):
+                $modifiedRows[ $i ][ $headers[ $j ] ] = $value;
+            endforeach;
+        endforeach;
+        return $modifiedRows;
     }
 
 
@@ -204,6 +239,9 @@ class Excel {
 
 
     protected static function setRows( &$spreadsheet, $rows ) {
+        if ( empty( $rows ) ):
+            return;
+        endif;
         for ( $i = 0; $i < count( $rows ); $i++ ):
             $startChar = 'A';
             foreach ( $rows[ $i ] as $j => $value ):
