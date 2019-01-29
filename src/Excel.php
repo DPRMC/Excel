@@ -94,6 +94,19 @@ class Excel {
         return $spreadsheet->setActiveSheetIndex( $sheetIndex )->toArray();
     }
 
+    /**
+     * Returns the number of lines in the sheet.
+     * @param $path
+     * @param int $sheetIndex
+     * @return int
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public static function numLinesInSheet( $path, $sheetIndex = 0 ): int {
+        $sheetAsArray = self::sheetToArray( $path, $sheetIndex );
+        return count( $sheetAsArray );
+    }
+
 
     /**
      * Given desired startingPath, this method will check if a file already exists at that location.
@@ -167,7 +180,7 @@ class Excel {
     protected static function setHeaderRow( &$spreadsheet, $rows = [] ) {
 
         // I guess you want to create a blank spreadsheet. Go right ahead.
-        if( empty($rows) ):
+        if ( empty( $rows ) ):
             return;
         endif;
 
@@ -268,10 +281,9 @@ class Excel {
     }
 
     /**
-     * @param Spreadsheet $spreadsheet
-     * @param string $path
-     *
-     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @param $spreadsheet
+     * @param $path
+     * @throws \Exception
      */
     protected static function writeSpreadsheet( $spreadsheet, $path ) {
         try {
