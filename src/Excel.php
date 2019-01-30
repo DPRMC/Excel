@@ -94,6 +94,18 @@ class Excel {
     }
 
     /**
+     * @param $path
+     * @param int $sheetIndex
+     * @return string
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public static function getSheetName($path, $sheetIndex = 0 ): string {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $sheetNames = $reader->listWorksheetNames($path);
+        return (string)$sheetNames[$sheetIndex];
+    }
+
+    /**
      * Returns the number of lines in the sheet.
      * @param $path
      * @param int $sheetIndex
@@ -115,7 +127,18 @@ class Excel {
     }
 
 
+    /**
+     * @param string $path
+     * @param int $sheetIndex
+     * @param int $maxLinesPerFile
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
     public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
+
+
+
         $pathsToSplitFiles = [];
         $sheetAsArray      = self::sheetToArray( $path, $sheetIndex );
         $header            = array_shift( $sheetAsArray );

@@ -187,13 +187,23 @@ class ExcelTest extends TestCase {
 
     /**
      * @test
-     * @group death
      */
     public function creatingEmptySpreadsheetShouldNotThrowException() {
         $sourceSheetPath = Excel::simple( [], [], 'test', $this->pathToOutputFile, [] );
         $numLinesInSheet = Excel::numLinesInSheet( $sourceSheetPath, 0 );
         $array           = Excel::sheetToArray( $sourceSheetPath, 0 );
         $this->assertEquals( 0, $numLinesInSheet );
+    }
+
+
+    /**
+     * @test
+     * @group list
+     */
+    public function getSheetNameShouldReturnString(){
+        $sourceSheetPath = Excel::simple( [], [], 'test', $this->pathToOutputFile, [] );
+        $sheetName = Excel::getSheetName($sourceSheetPath,0);
+        $this->assertEquals('test', $sheetName);
     }
 
 
