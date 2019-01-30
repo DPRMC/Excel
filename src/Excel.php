@@ -136,16 +136,14 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
     public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
-
-
-
+        $sheetName = Excel::getSheetName($path,$sheetIndex);
         $pathsToSplitFiles = [];
         $sheetAsArray      = self::sheetToArray( $path, $sheetIndex );
         $header            = array_shift( $sheetAsArray );
         $chunks            = array_chunk( $sheetAsArray, $maxLinesPerFile );
         foreach ( $chunks as $i => $chunk ):
             $chunk               = self::setHeadersAsIndexes( $chunk, $header );
-            $pathsToSplitFiles[] = self::simple( $chunk, [], 'split', tempnam( NULL, 'split_' . $i ), [] );
+            $pathsToSplitFiles[] = self::simple( $chunk, [], $sheetName, tempnam( NULL, 'split_' . $i ), [] );
         endforeach;
         return $pathsToSplitFiles;
     }
