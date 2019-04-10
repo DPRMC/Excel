@@ -87,7 +87,18 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
     public static function sheetToArray( $path, $sheetIndex = 0 ) {
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $path_parts = pathinfo($path);
+        $fileExtension = $path_parts['extension'];
+
+        switch($fileExtension):
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
         $reader->setLoadSheetsOnly( [ 0 ] );
         $spreadsheet = $reader->load( $path );
         return $spreadsheet->setActiveSheetIndex( $sheetIndex )->toArray();
