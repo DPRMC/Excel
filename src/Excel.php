@@ -3,6 +3,7 @@
 namespace DPRMC;
 
 use DPRMC\Excel\Exceptions\UnableToInitializeOutputFile;
+use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Color;
@@ -80,13 +81,14 @@ class Excel {
 
     /**
      * @param string $path
-     * @param int $sheetIndex
+     * @param string|array $sheetName This should be a string containing a single worksheet name.
+     * @param IReadFilter $readFilter Only want specific columns, use this parameter.
      *
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public static function sheetToArray( $path, $sheetIndex = 0 ) {
+    public static function sheetToArray( string $path, $sheetName , IReadFilter $readFilter=null ) {
         $path_parts = pathinfo($path);
         $fileExtension = $path_parts['extension'];
 
@@ -99,9 +101,9 @@ class Excel {
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
                 break;
         endswitch;
-        $reader->setLoadSheetsOnly( [ 0 ] );
+        $reader->setLoadSheetsOnly( $sheetName );
         $spreadsheet = $reader->load( $path );
-        return $spreadsheet->setActiveSheetIndex( $sheetIndex )->toArray();
+        return $spreadsheet->setActiveSheetIndexByName( $sheetName )->toArray();
     }
 
     /**
