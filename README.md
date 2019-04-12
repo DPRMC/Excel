@@ -39,8 +39,27 @@ $pathToFile = Excel::simple( $rows, $totals, "Tab Label", '/outputFile.xlsx', $o
 ```
 
 ## Usage: Reading a Spreadsheet into a PHP Array
-Pass in the path to an XLSX spreadsheet and a sheet index number (defaults to 0), and this method will return an associative array.
+Pass in the path to an XLSX spreadsheet and a sheet name, and this method will return an associative array.
 ```php
-$array = Excel::sheetToArray('/outputFile.xlsx', 0);
+/**  Define a Read Filter class implementing \PhpOffice\PhpSpreadsheet\Reader\IReadFilter  */
+class MyReadFilter implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter
+{
+    public function readCell($column, $row, $worksheetName = '') {
+        //  Read rows 1 to 7 and columns A to E only
+        if ($row >= 1 && $row <= 7) {
+            if (in_array($column,range('A','E'))) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+/**  Create an Instance of our Read Filter  **/
+$filterSubset = new MyReadFilter();
+
+
+$pathToWorkbook = '/outputFile.xlsx';
+$sheetName = 'Security_Pricing_Update';
+$array = Excel::sheetToArray($pathToWorkbook, $sheetName, $filterSubset);
 print_r($array);
 ```

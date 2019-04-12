@@ -102,6 +102,11 @@ class Excel {
                 break;
         endswitch;
         $reader->setLoadSheetsOnly( $sheetName );
+
+        if($readFilter):
+            $reader->setReadFilter($readFilter);
+        endif;
+
         $spreadsheet = $reader->load( $path );
         return $spreadsheet->setActiveSheetIndexByName( $sheetName )->toArray();
     }
