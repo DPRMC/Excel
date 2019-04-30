@@ -137,7 +137,8 @@ class Excel {
                 0 => NULL,
             ],
         ];
-        $sheetAsArray      = self::sheetToArray( $path, $sheetIndex );
+        $sheetName = Excel::getSheetName($path,$sheetIndex);
+        $sheetAsArray      = self::sheetToArray( $path, $sheetName );
         if ( $sheetAsArray == $emptySheetAsArray ):
             return 0;
         endif;
@@ -156,7 +157,7 @@ class Excel {
     public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
         $sheetName = Excel::getSheetName($path,$sheetIndex);
         $pathsToSplitFiles = [];
-        $sheetAsArray      = self::sheetToArray( $path, $sheetIndex );
+        $sheetAsArray      = self::sheetToArray( $path, $sheetName );
         $header            = array_shift( $sheetAsArray );
         $chunks            = array_chunk( $sheetAsArray, $maxLinesPerFile );
         foreach ( $chunks as $i => $chunk ):
