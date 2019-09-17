@@ -64,7 +64,7 @@ class ExcelTest extends TestCase {
         $sheetName = 'testOutput.xlsx';
 
         $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
-        $sheetAsArray = Excel::sheetToArray( $pathToFile );
+        $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
 
         $this->assertEquals( 'CUSIP', $sheetAsArray[ 0 ][ 0 ] );
 
@@ -119,7 +119,7 @@ class ExcelTest extends TestCase {
         $sheetName = 'testOutput.xlsx';
 
         $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
-        $sheetAsArray = Excel::sheetToArray( $pathToFile );
+        $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
 
         $this->assertEquals( 'B', $sheetAsArray[ 3 ][ 2 ] );
     }
@@ -191,7 +191,7 @@ class ExcelTest extends TestCase {
     public function creatingEmptySpreadsheetShouldNotThrowException() {
         $sourceSheetPath = Excel::simple( [], [], 'test', $this->pathToOutputFile, [] );
         $numLinesInSheet = Excel::numLinesInSheet( $sourceSheetPath, 0 );
-        $array           = Excel::sheetToArray( $sourceSheetPath, 0 );
+        $array           = Excel::sheetToArray( $sourceSheetPath, 'test' );
         $this->assertEquals( 0, $numLinesInSheet );
     }
 
@@ -200,10 +200,47 @@ class ExcelTest extends TestCase {
      * @test
      * @group list
      */
-    public function getSheetNameShouldReturnString(){
+    public function getSheetNameShouldReturnString() {
         $sourceSheetPath = Excel::simple( [], [], 'test', $this->pathToOutputFile, [] );
-        $sheetName = Excel::getSheetName($sourceSheetPath,0);
-        $this->assertEquals('test', $sheetName);
+        $sheetName       = Excel::getSheetName( $sourceSheetPath, 0 );
+        $this->assertEquals( 'test', $sheetName );
+    }
+
+
+    /**
+     * @test
+     * @group num
+     */
+    public function setColumnAsNumericShouldSetNumeric() {
+        $rows[]    = [
+            'CUSIP'  => '123456789',
+            'DATE'   => '2018-01-01',
+            'ACTION' => 'BUY',
+            'PRICE'  => '123.456',
+        ];
+        $rows[]    = [
+            'CUSIP'  => 'ABC123789',
+            'DATE'   => '2019-01-01',
+            'ACTION' => 'BUY',
+            'PRICE'  => '998.342',
+        ];
+        $totals    = [
+            'CUSIP'  => '1',
+            'DATE'   => '2',
+            'ACTION' => '3',
+            'PRICE'  => '987.654',
+        ];
+        $options   = [];
+        $sheetName = 'testOutput.xlsx';
+
+        $numberTypeColumns = [
+            'PRICE',
+        ];
+
+        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns );
+        $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
+
+        $this->assertTrue( gettype( $sheetAsArray[ 1 ][ 3 ] ) === 'double' );
     }
 
 

@@ -29,6 +29,8 @@ class Excel {
 
     static $category = 'category';
 
+    static $columnsThatShouldBeNumbers = [];
+
     static $headerStyleArray = [
         'fill' => [
             'fillType' => Fill::FILL_SOLID,
@@ -52,11 +54,12 @@ class Excel {
      * @param string $sheetName
      * @param string $path
      * @param array $options
+     * @param array $columnsThatShouldBeNumbers
      *
      * @return string
      * @throws \Exception
      */
-    public static function simple( array $rows = [], array $totals = [], string $sheetName = 'worksheet', string $path = '', array $options = [] ) {
+    public static function simple( array $rows = [], array $totals = [], string $sheetName = 'worksheet', string $path = '', array $options = [], array $columnsThatShouldBeNumbers = [] ) {
         try {
 
             /**
@@ -68,10 +71,14 @@ class Excel {
             self::setOptions( $spreadsheet, $options );
             self::setOrientationLandscape( $spreadsheet );
             self::setHeaderRow( $spreadsheet, $rows );
+            self::setColumnsThatShouldBeNumbers( $columnsThatShouldBeNumbers, $rows );
             self::setRows( $spreadsheet, $rows );
             self::setFooterTotals( $spreadsheet, $totals );
             self::setWorksheetTitle( $spreadsheet, $sheetName );
+
             self::writeSpreadsheet( $spreadsheet, $path );
+
+
         } catch ( \Exception $e ) {
             throw $e;
         }
@@ -88,11 +95,11 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public static function sheetToArray( string $path, $sheetName , IReadFilter $readFilter=null ) {
-        $path_parts = pathinfo($path);
-        $fileExtension = $path_parts['extension'];
+    public static function sheetToArray( string $path, $sheetName, IReadFilter $readFilter = NULL ) {
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
 
-        switch($fileExtension):
+        switch ( $fileExtension ):
             case 'xls':
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
                 break;
@@ -103,12 +110,29 @@ class Excel {
         endswitch;
         $reader->setLoadSheetsOnly( $sheetName );
 
-        if($readFilter):
-            $reader->setReadFilter($readFilter);
+        if ( $readFilter ):
+            $reader->setReadFilter( $readFilter );
         endif;
 
         $spreadsheet = $reader->load( $path );
         return $spreadsheet->setActiveSheetIndexByName( $sheetName )->toArray();
+    }
+
+
+    /**
+     * Given a zero based index from a php array, this method will return the Excel column equivalent.
+     * @param $index
+     * @return string
+     */
+    public static function getExcelColumnFromIndex( $index ) {
+        $numeric = $index % 26;
+        $letter  = chr( 65 + $numeric );
+        $index2  = intval( $index / 26 );
+        if ( $index2 > 0 ):
+            return self::getExcelColumnFromIndex( $index2 - 1 ) . $letter;
+        else:
+            return $letter;
+        endif;
     }
 
     /**
@@ -117,10 +141,10 @@ class Excel {
      * @return string
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
-    public static function getSheetName($path, $sheetIndex = 0 ): string {
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $sheetNames = $reader->listWorksheetNames($path);
-        return (string)$sheetNames[$sheetIndex];
+    public static function getSheetName( $path, $sheetIndex = 0 ): string {
+        $reader     = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $sheetNames = $reader->listWorksheetNames( $path );
+        return (string)$sheetNames[ $sheetIndex ];
     }
 
     /**
@@ -137,7 +161,7 @@ class Excel {
                 0 => NULL,
             ],
         ];
-        $sheetName = Excel::getSheetName($path,$sheetIndex);
+        $sheetName         = Excel::getSheetName( $path, $sheetIndex );
         $sheetAsArray      = self::sheetToArray( $path, $sheetName );
         if ( $sheetAsArray == $emptySheetAsArray ):
             return 0;
@@ -155,7 +179,7 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
     public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
-        $sheetName = Excel::getSheetName($path,$sheetIndex);
+        $sheetName         = Excel::getSheetName( $path, $sheetIndex );
         $pathsToSplitFiles = [];
         $sheetAsArray      = self::sheetToArray( $path, $sheetName );
         $header            = array_shift( $sheetAsArray );
@@ -282,16 +306,37 @@ class Excel {
         if ( empty( $rows ) ):
             return;
         endif;
+
         for ( $i = 0; $i < count( $rows ); $i++ ):
             $startChar = 'A';
             foreach ( $rows[ $i ] as $j => $value ):
                 $iProperIndex   = $i + 2; // The data should start one row below the header.
                 $cellCoordinate = $startChar . $iProperIndex;
-                $spreadsheet->setActiveSheetIndex( 0 )
-                            ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+
+                if ( self::shouldBeNumeric( $startChar ) ):
+                    $spreadsheet->setActiveSheetIndex( 0 )
+                                ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_NUMERIC );
+                else:
+                    $spreadsheet->setActiveSheetIndex( 0 )
+                                ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+                endif;
+
                 $startChar++;
             endforeach;
         endfor;
+    }
+
+
+    /**
+     *
+     * @param string $startChar
+     * @return bool
+     */
+    protected static function shouldBeNumeric( string $startChar ): bool {
+        if ( array_key_exists( $startChar, self::$columnsThatShouldBeNumbers ) ):
+            return TRUE;
+        endif;
+        return FALSE;
     }
 
     /**
@@ -335,13 +380,28 @@ class Excel {
             if ( is_array( $value ) ):
                 $multiDimensionalFooterRow = $footerRowStart;
                 foreach ( $value as $name => $childValue ):
-                    $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_STRING );
+
+                    if ( self::shouldBeNumeric( $columnLetter ) ):
+                        $spreadsheet->setActiveSheetIndex( 0 )
+                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_NUMERIC );
+                    else:
+                        $spreadsheet->setActiveSheetIndex( 0 )
+                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_STRING );
+                    endif;
+
+
                     $multiDimensionalFooterRow++;
                 endforeach;
             else:
-                $spreadsheet->setActiveSheetIndex( 0 )
-                            ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, DataType::TYPE_STRING );
+                if ( self::shouldBeNumeric( $columnLetter ) ):
+                    $spreadsheet->setActiveSheetIndex( 0 )
+                                ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, DataType::TYPE_NUMERIC );
+                else:
+                    $spreadsheet->setActiveSheetIndex( 0 )
+                                ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, DataType::TYPE_STRING );
+                endif;
+
+
             endif;
 
         endforeach;
@@ -358,6 +418,37 @@ class Excel {
                     ->setTitle( $worksheetName );
     }
 
+
+    /**
+     * Send an array of column columns that should be treated as numeric
+     * @param array $columnsThatShouldBeNumbers
+     * @param array $rows
+     * @throws \Exception
+     */
+    protected static function setColumnsThatShouldBeNumbers( array $columnsThatShouldBeNumbers, array $rows ) {
+        if ( empty( $rows ) ):
+            return;
+        endif;
+
+        $columnsWithExcelIndexes = [];
+
+        $firstRow = $rows[ 0 ];
+        $keys     = array_keys( $firstRow );
+        foreach ( $columnsThatShouldBeNumbers as $i => $columnName ):
+            $indexFromFirstRow = array_search( $columnName, $keys );
+
+            if ( FALSE === $indexFromFirstRow ):
+                throw new \Exception( "Unable to find the column header named $columnName. Check your list of columns that should be numeric." );
+            endif;
+
+            $excelColumnLetter                             = self::getExcelColumnFromIndex( $indexFromFirstRow );
+            $columnsWithExcelIndexes[ $excelColumnLetter ] = $columnName;
+        endforeach;
+
+        self::$columnsThatShouldBeNumbers = $columnsWithExcelIndexes;
+    }
+
+
     /**
      * @param $spreadsheet
      * @param $path
@@ -370,6 +461,7 @@ class Excel {
         } catch ( \Exception $exception ) {
             throw new \Exception( $exception->getMessage() );
         }
-
     }
+
+
 }
