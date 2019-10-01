@@ -414,6 +414,11 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Exception;
      */
     protected static function setWorksheetTitle( &$spreadsheet, $worksheetName = 'worksheet' ) {
+
+        if(empty($worksheetName)):
+            throw new \Exception("The work sheet name is empty. You need to supply a name to create a spread sheet.");
+        endif;
+
         $spreadsheet->getActiveSheet()
                     ->setTitle( $worksheetName );
     }
