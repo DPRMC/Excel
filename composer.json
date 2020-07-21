@@ -3,12 +3,12 @@
   "description": "A php wrapper around the PhpSpreadsheet library.",
   "type": "library",
   "require": {
-    "phpoffice/phpspreadsheet": "^1.14",
-    "phpunit/phpunit": "^9.2"
+    "phpoffice/phpspreadsheet": "^1.14"
   },
   "require-dev": {
     "php-coveralls/php-coveralls": "^2.1",
-    "mikey179/vfsstream": "^1.6"
+    "mikey179/vfsstream": "^1.6",
+    "phpunit/phpunit": "^9.2"
   },
   "license": "MIT",
   "authors": [
