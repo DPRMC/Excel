@@ -2,7 +2,8 @@
 
 namespace DPRMC\Excel\Tests;
 
-use DPRMC\Excel;
+use DPRMC\Excel\Excel;
+use DPRMC\Excel\Exceptions\UnableToInitializeOutputFile;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
@@ -27,14 +28,15 @@ class ExcelTest extends TestCase {
     protected static $unreadableSourceFilePath;
 
 
-    public function setUp() {
+    public function setUp(): void {
         self::$vfsRootDirObject         = vfsStream::setup( self::VFS_ROOT_DIR );
         self::$unreadableSourceFilePath = vfsStream::url( self::VFS_ROOT_DIR . DIRECTORY_SEPARATOR . self::UNWRITEABLE_DIR_NAME );
-        chmod( self::$unreadableSourceFilePath, '0000' );
+        chmod( self::$unreadableSourceFilePath, 0000 );
+        chmod( $this->pathToOutputDirectory, 0777 );
     }
 
 
-    public function tearDown() {
+    public function tearDown(): void {
         $files = scandir( $this->pathToOutputDirectory );
         array_shift( $files ); // .
         array_shift( $files ); // ..
@@ -48,6 +50,7 @@ class ExcelTest extends TestCase {
 
     /**
      * @test
+     * @group toarray
      */
     public function toArrayCreatesHeader() {
         $rows[]    = [
@@ -80,9 +83,10 @@ class ExcelTest extends TestCase {
 
     /**
      * @test
+     * @group ex
      */
     public function unableToInitializeFileShouldThrowException() {
-        $this->expectException( \Exception::class );
+        $this->expectException( UnableToInitializeOutputFile::class );
 
         $rows[]    = [
             'CUSIP'  => '123456789',
@@ -96,6 +100,9 @@ class ExcelTest extends TestCase {
         ];
         $options   = [];
         $sheetName = 'testOutput.xlsx';
+
+//        var_dump(self::$unreadableSourceFilePath);
+//        var_dump(is_writable(self::$unreadableSourceFilePath));
 
         Excel::simple( $rows, $totals, $sheetName, self::$unreadableSourceFilePath, $options );
     }
@@ -209,7 +216,7 @@ class ExcelTest extends TestCase {
 
     /**
      * @test
-     * @group num
+     * @group num1
      */
     public function setColumnAsNumericShouldSetNumeric() {
         $rows[]    = [
@@ -236,6 +243,9 @@ class ExcelTest extends TestCase {
         $numberTypeColumns = [
             'PRICE',
         ];
+
+        var_dump( $this->pathToOutputFile );
+        var_dump( is_writable( $this->pathToOutputFile ) );
 
         $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns );
         $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );

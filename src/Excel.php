@@ -1,6 +1,6 @@
 <?php
 
-namespace DPRMC;
+namespace DPRMC\Excel;
 
 use DPRMC\Excel\Exceptions\UnableToInitializeOutputFile;
 use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
@@ -10,6 +10,7 @@ use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use Exception;
 
 /**
  * Class Excel
@@ -57,14 +58,16 @@ class Excel {
      * @param array $columnsThatShouldBeNumbers
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function simple( array $rows = [], array $totals = [], string $sheetName = 'worksheet', string $path = '', array $options = [], array $columnsThatShouldBeNumbers = [] ) {
+    public static function simple( array $rows = [],
+                                   array $totals = [],
+                                   string $sheetName = 'worksheet',
+                                   string $path = '',
+                                   array $options = [],
+                                   array $columnsThatShouldBeNumbers = [] ) {
         try {
 
-            /**
-             * @var Spreadsheet $spreadsheet
-             */
             $spreadsheet = new Spreadsheet();
             $path        = self::getUniqueFilePath( $path );
             self::initializeFile( $path );
@@ -75,11 +78,8 @@ class Excel {
             self::setRows( $spreadsheet, $rows );
             self::setFooterTotals( $spreadsheet, $totals );
             self::setWorksheetTitle( $spreadsheet, $sheetName );
-
             self::writeSpreadsheet( $spreadsheet, $path );
-
-
-        } catch ( \Exception $e ) {
+        } catch ( Exception $e ) {
             throw $e;
         }
 
@@ -92,8 +92,8 @@ class Excel {
      * @param IReadFilter $readFilter Only want specific columns, use this parameter.
      *
      * @return array
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     * @throws \PhpOffice\PhpSpreadsheetException
+     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
      */
     public static function sheetToArray( string $path, $sheetName, IReadFilter $readFilter = NULL ) {
         $path_parts    = pathinfo( $path );
@@ -139,7 +139,7 @@ class Excel {
      * @param $path
      * @param int $sheetIndex
      * @return string
-     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
      */
     public static function getSheetName( $path, $sheetIndex = 0 ): string {
         $reader     = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
@@ -152,8 +152,8 @@ class Excel {
      * @param $path
      * @param int $sheetIndex
      * @return int
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     * @throws \PhpOffice\PhpSpreadsheetException
+     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
      */
     public static function numLinesInSheet( $path, $sheetIndex = 0 ): int {
         $emptySheetAsArray = [
@@ -175,8 +175,8 @@ class Excel {
      * @param int $sheetIndex
      * @param int $maxLinesPerFile
      * @return array
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
-     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     * @throws \PhpOffice\PhpSpreadsheetException
+     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
      */
     public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
         $sheetName         = Excel::getSheetName( $path, $sheetIndex );
@@ -215,7 +215,7 @@ class Excel {
      * @param string $startingPath
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     protected static function getUniqueFilePath( $startingPath = '' ) {
         if ( file_exists( $startingPath ) ) {
@@ -223,7 +223,7 @@ class Excel {
             $startingPath = preg_replace( '/^(.*)\.' . $filename_ext . '$/', '$1_' . date( 'YmdHis' ) . '.' . $filename_ext, $startingPath );
 
             if ( is_null( $startingPath ) ) {
-                throw new \Exception( "The php function preg_replace (called in Excel::getUniqueFilePath()) returned null, indicating an error." );
+                throw new Exception( "The php function preg_replace (called in Excel::getUniqueFilePath()) returned null, indicating an error." );
             }
         }
 
@@ -236,8 +236,13 @@ class Excel {
      * @throws UnableToInitializeOutputFile
      */
     protected static function initializeFile( $path ) {
+
+        if( false === is_writable($path)):
+            throw new UnableToInitializeOutputFile( "Path is not writable. Unable to write to the file at " . $path );
+        endif;
+
         $bytes_written = file_put_contents( $path, '' );
-        if ( $bytes_written === FALSE ):
+        if ( FALSE === $bytes_written ):
             throw new UnableToInitializeOutputFile( "Unable to write to the file at " . $path );
         endif;
     }
@@ -267,7 +272,7 @@ class Excel {
     /**
      * @param Spreadsheet $spreadsheet
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected static function setOrientationLandscape( &$spreadsheet ) {
         $spreadsheet->getActiveSheet()
@@ -343,7 +348,7 @@ class Excel {
      * @param Spreadsheet $spreadsheet
      * @param array $totals
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected static function setFooterTotals( &$spreadsheet, $totals ) {
         // Create a map array by iterating through the headers
@@ -372,7 +377,7 @@ class Excel {
             $columnLetter = array_search( $field, $aHeaderMap );
 
             if ( $columnLetter === FALSE ):
-                throw new \Exception( "EXCEPTION: " . $field . " was not found in " . print_r( $aHeaderMap, TRUE ) );
+                throw new Exception( "EXCEPTION: " . $field . " was not found in " . print_r( $aHeaderMap, TRUE ) );
             endif;
 
 
@@ -383,10 +388,14 @@ class Excel {
 
                     if ( self::shouldBeNumeric( $columnLetter ) ):
                         $spreadsheet->setActiveSheetIndex( 0 )
-                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_NUMERIC );
+                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow,
+                                                            $childValue,
+                                                            DataType::TYPE_NUMERIC );
                     else:
                         $spreadsheet->setActiveSheetIndex( 0 )
-                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_STRING );
+                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow,
+                                                            $childValue,
+                                                            DataType::TYPE_STRING );
                     endif;
 
 
@@ -395,10 +404,14 @@ class Excel {
             else:
                 if ( self::shouldBeNumeric( $columnLetter ) ):
                     $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, DataType::TYPE_NUMERIC );
+                                ->setCellValueExplicit( $columnLetter . $footerRowStart,
+                                                        $value,
+                                                        DataType::TYPE_NUMERIC );
                 else:
                     $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, DataType::TYPE_STRING );
+                                ->setCellValueExplicit( $columnLetter . $footerRowStart,
+                                                        $value,
+                                                        DataType::TYPE_STRING );
                 endif;
 
 
@@ -411,12 +424,13 @@ class Excel {
      * @param Spreadsheet $spreadsheet
      * @param string $worksheetName
      *
-     * @throws \PhpOffice\PhpSpreadsheet\Exception;
+     * @throws \PhpOffice\PhpSpreadsheetException;
+     * @throws Exception
      */
     protected static function setWorksheetTitle( &$spreadsheet, $worksheetName = 'worksheet' ) {
 
-        if(empty($worksheetName)):
-            throw new \Exception("The work sheet name is empty. You need to supply a name to create a spread sheet.");
+        if ( empty( $worksheetName ) ):
+            throw new Exception( "The work sheet name is empty. You need to supply a name to create a spread sheet." );
         endif;
 
         $spreadsheet->getActiveSheet()
@@ -428,7 +442,7 @@ class Excel {
      * Send an array of column columns that should be treated as numeric
      * @param array $columnsThatShouldBeNumbers
      * @param array $rows
-     * @throws \Exception
+     * @throws Exception
      */
     protected static function setColumnsThatShouldBeNumbers( array $columnsThatShouldBeNumbers, array $rows ) {
         if ( empty( $rows ) ):
@@ -443,7 +457,7 @@ class Excel {
             $indexFromFirstRow = array_search( $columnName, $keys );
 
             if ( FALSE === $indexFromFirstRow ):
-                throw new \Exception( "Unable to find the column header named $columnName. Check your list of columns that should be numeric." );
+                throw new Exception( "Unable to find the column header named $columnName. Check your list of columns that should be numeric." );
             endif;
 
             $excelColumnLetter                             = self::getExcelColumnFromIndex( $indexFromFirstRow );
@@ -457,14 +471,14 @@ class Excel {
     /**
      * @param $spreadsheet
      * @param $path
-     * @throws \Exception
+     * @throws Exception
      */
     protected static function writeSpreadsheet( $spreadsheet, $path ) {
         try {
             $writer = new Xlsx( $spreadsheet );
             $writer->save( $path );
-        } catch ( \Exception $exception ) {
-            throw new \Exception( $exception->getMessage() );
+        } catch ( Exception $exception ) {
+            throw new Exception( $exception->getMessage() );
         }
     }
 
