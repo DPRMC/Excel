@@ -315,8 +315,16 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-                    $spreadsheet->setActiveSheetIndex( 0 )
+
+                    // Prevent '0' from being set for a cell in a numeric column with a NULL value
+                    if( is_null( $value ) ) :
+                        $spreadsheet->setActiveSheetIndex( 0 )
+                            ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_NULL );
+                    else :
+                        $spreadsheet->setActiveSheetIndex( 0 )
                                 ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_NUMERIC );
+                    endif;
+
                 else:
                     $spreadsheet->setActiveSheetIndex( 0 )
                                 ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
