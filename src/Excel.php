@@ -237,10 +237,6 @@ class Excel {
      */
     protected static function initializeFile( $path ) {
 
-        if( false === is_writable($path)):
-            throw new UnableToInitializeOutputFile( "Path is not writable. Unable to write to the file at " . $path );
-        endif;
-
         $bytes_written = file_put_contents( $path, '' );
         if ( FALSE === $bytes_written ):
             throw new UnableToInitializeOutputFile( "Unable to write to the file at " . $path );
