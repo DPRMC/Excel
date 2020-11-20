@@ -319,13 +319,13 @@ class Excel {
 
                 if ( self::shouldBeNumeric( $startChar ) ):
                     $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC )
-                        ->setFormatCode( self::FORMAT_NUMERIC );
+                        ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
+                    $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
 
                 else:
                     $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING )
-                        ->setFormatCode( NumberFormat::FORMAT_TEXT );
+                        ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+                    $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
                 endif;
 
                 $startChar++;
