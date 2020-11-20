@@ -3,7 +3,7 @@
   "description": "A php wrapper around the PhpSpreadsheet library.",
   "type": "library",
   "require": {
-    "phpoffice/phpspreadsheet": "^1.14"
+    "phpoffice/phpspreadsheet": "^1.15"
   },
   "require-dev": {
     "php-coveralls/php-coveralls": "^2.1",
