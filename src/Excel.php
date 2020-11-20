@@ -18,6 +18,8 @@ use Exception;
  */
 class Excel {
 
+    const FORMAT_NUMBER_DECIMAL = '.0#####################';
+
     static $title = 'Default Title';
 
     static $subject = 'Default Subject';
@@ -323,6 +325,9 @@ class Excel {
                     else :
                         $spreadsheet->setActiveSheetIndex( 0 )
                                 ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_NUMERIC );
+                        $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()
+                            ->setFormatCode( self::FORMAT_NUMBER_DECIMAL );
+
                     endif;
 
                 else:
