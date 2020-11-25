@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use Exception;
@@ -175,8 +176,7 @@ class Excel {
      * @param int $sheetIndex
      * @param int $maxLinesPerFile
      * @return array
-     * @throws \PhpOffice\PhpSpreadsheetException
-     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
+     * @throws Exception
      */
     public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
         $sheetName         = Excel::getSheetName( $path, $sheetIndex );
