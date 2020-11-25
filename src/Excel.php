@@ -19,6 +19,8 @@ use Exception;
  */
 class Excel {
 
+    const FORMAT_NUMERIC = '0.000000####;[=0]0';
+
     static $title = 'Default Title';
 
     static $subject = 'Default Subject';
@@ -315,19 +317,14 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-
-                    // Prevent '0' from being set for a cell in a numeric column with a NULL value
-                    if( is_null( $value ) ) :
-                        $spreadsheet->setActiveSheetIndex( 0 )
-                            ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_NULL );
-                    else :
-                        $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_NUMERIC );
-                    endif;
+                    $spreadsheet->setActiveSheetIndex( 0 )
+                        ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
+                    $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
 
                 else:
                     $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+                        ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+                    $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
                 endif;
 
                 $startChar++;
