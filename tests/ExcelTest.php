@@ -6,6 +6,7 @@ use DPRMC\Excel\Excel;
 use DPRMC\Excel\Exceptions\UnableToInitializeOutputFile;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStream;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PHPUnit\Framework\TestCase;
 
 class ExcelTest extends TestCase {
@@ -251,6 +252,131 @@ class ExcelTest extends TestCase {
         $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
 
         $this->assertTrue( gettype( $sheetAsArray[ 1 ][ 3 ] ) === 'double' );
+    }
+
+
+    /**
+     * @test
+     * @group advanced
+     */
+    public function advancedCreatesSheet() {
+        $rows[] = [
+            'CUSIP'  => '123456789',
+            'DATE'   => '2018-01-01',
+            'ACTION' => 'BUY',
+            'PRICE'  => '123.456',
+            'FORM' => '=IFERROR(((D1+2)÷4),"")'
+        ];
+        $rows[] = [
+            'CUSIP'  => 'ABC123789',
+            'DATE'   => '2019-01-01',
+            'ACTION' => 'BUY',
+            'PRICE'  => '998.342',
+            'FORM' => '=IFERROR(((D2+2)÷4),"")'
+        ];
+        $totals = [
+            'CUSIP'  => '1',
+            'DATE'   => '2',
+            'ACTION' => '3',
+            'PRICE'  => '987.654',
+            'FORM' => '=IFERROR(((D3+2)÷4),"")'
+        ];
+
+
+        $testStyle1 =
+            [ 'font'      => [
+                'bold' => TRUE,
+            ],
+              'alignment' => [
+                  'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+              ],
+              'borders'   => [
+                  'top' => [
+                      'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                  ],
+              ],
+              'fill'      => [
+                  'fillType'   => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                  'rotation'   => 90,
+                  'startColor' => [
+                      'argb' => 'FFA0A0A0',
+                  ],
+                  'endColor'   => [
+                      'argb' => 'FFFFFFFF',
+                  ],
+              ],
+            ];
+
+        $testStyle2 =
+            [ 'font'      => [
+                'bold' => TRUE,
+            ],
+              'alignment' => [
+                  'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+              ],
+              'borders'   => [
+                  'top' => [
+                      'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_DASHDOT,
+                  ],
+              ],
+              'fill'      => [
+                  'fillType'   => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                  'rotation'   => 45,
+                  'startColor' => [
+                      'argb' => 'CCCCCC',
+                  ],
+                  'endColor'   => [
+                      'argb' => 'FF0000',
+                  ],
+              ],
+            ];
+
+        $testStyle3 =
+            [ 'font'      => [
+                'bold' => TRUE,
+            ],
+              'alignment' => [
+                  'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+              ],
+              'borders'   => [
+                  'top' => [
+                      'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                  ],
+              ],
+              'fill'      => [
+                  'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+
+                  'color' => [
+                      'argb' => 'FFFF00',
+                  ],
+
+              ],
+            ];
+
+
+        $sheetName       = '';
+        $options         = [];
+        $columnDataTypes = [
+            'CUSIP' => DataType::TYPE_STRING,
+            'PRICE' => DataType::TYPE_NUMERIC,
+            'FORM' => DataType::TYPE_FORMULA
+        ];
+        $styles          = [
+            'CUSIP'   => $testStyle1,
+            'ACTION'  => $testStyle2,
+            'CUSIP:*' => $testStyle3,
+            'DATE:2'  => $testStyle1,
+        ];
+
+
+        $pathToFile = Excel::advanced( $rows,
+                                       $totals,
+                                       $sheetName,
+                                       $this->pathToOutputFile,
+                                       $options,
+                                       $columnDataTypes,
+                                       $styles );
+
     }
 
 

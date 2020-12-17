@@ -50,18 +50,149 @@ class Excel {
         ],
     ];
 
+    const CELL_ADDRESS_TYPE_HEADER_CELL = 'cell_address_type_header';
+    const CELL_ADDRESS_TYPE_ALL_ROWS    = 'cell_address_type_all_rows';
+    const CELL_ADDRESS_TYPE_SINGLE_CELL = 'cell_address_type_single_cell';
+
+
+    public static function advanced( array $rows = [],
+                                     array $totals = [],
+                                     string $sheetName = 'worksheet',
+                                     string $path = '',
+                                     array $options = [],
+                                     array $columnDataTypes = [],
+                                     array $styles = [] ) {
+        try {
+
+            $spreadsheet = new Spreadsheet();
+            $path        = self::getUniqueFilePath( $path );
+            self::initializeFile( $path );
+            self::setOptions( $spreadsheet, $options );
+            self::setOrientationLandscape( $spreadsheet );
+            self::setHeaderRow( $spreadsheet, $rows );
+            self::setColumnsThatShouldBeNumbers( $columnDataTypes[ DataType::TYPE_NUMERIC ], $rows );
+            self::setRows( $spreadsheet, $rows );
+            self::setFooterTotals( $spreadsheet, $totals );
+            self::setWorksheetTitle( $spreadsheet, $sheetName );
+
+            self::setStyles( $spreadsheet, $rows, $styles );
+
+            self::writeSpreadsheet( $spreadsheet, $path );
+        } catch ( Exception $e ) {
+            throw $e;
+        }
+
+        return $path;
+    }
+
+
+    /**
+     * @param $spreadsheet
+     * @param array $rows
+     * @param array $styles
+     */
+    protected static function setStyles( &$spreadsheet, array $rows = [], array $styles = [] ) {
+        // I guess you want to create a blank spreadsheet. Go right ahead.
+        if ( empty( $rows ) ):
+            return;
+        endif;
+
+        //$spreadsheet->getActiveSheet()->getStyle('B3:B7')->applyFromArray($styleArray);
+
+        foreach ( $styles as $cellAddress => $styleArray ):
+            $cellAddressType = self::getCellAddressType( $cellAddress );
+            switch ( $cellAddressType ):
+                case self::CELL_ADDRESS_TYPE_HEADER_CELL:
+                    break;
+
+                case self::CELL_ADDRESS_TYPE_ALL_ROWS:
+                    break;
+
+                case self::CELL_ADDRESS_TYPE_SINGLE_CELL:
+                    break;
+
+            endswitch;
+        endforeach;
+
+
+        $startChar = 'A';
+        foreach ( $rows[ 0 ] as $field => $value ) {
+            $spreadsheet->setActiveSheetIndex( 0 )
+                        ->setCellValueExplicit( $startChar . '1', $field, DataType::TYPE_STRING );
+
+            $spreadsheet->setActiveSheetIndex( 0 )
+                        ->getStyle( $startChar . '1' )
+                        ->applyFromArray( self::$headerStyleArray );
+
+            $spreadsheet->setActiveSheetIndex( 0 )
+                        ->getColumnDimension( $startChar )
+                        ->setAutoSize( TRUE );
+
+            $startChar++;
+        }
+    }
+
+
+    /**
+     * @param string $cellAddress
+     * @return string
+     * @throws Exception
+     */
+    private static function getCellAddressType( string $cellAddress ): string {
+        $cellAddressParts = explode( ':', $cellAddress );
+        if ( 1 == sizeof( $cellAddressParts ) ):
+            return self::CELL_ADDRESS_TYPE_HEADER_CELL;
+        endif;
+
+        if ( '*' == $cellAddressParts[ 1 ] ):
+            return self::CELL_ADDRESS_TYPE_ALL_ROWS;
+        endif;
+
+        if ( is_numeric( $cellAddressParts[ 1 ] ) ):
+            return self::CELL_ADDRESS_TYPE_SINGLE_CELL;
+        endif;
+
+        throw new Exception( "I'm unable to determine the cell address type of: " . $cellAddress );
+    }
+
+
+    /**
+     * @param string $headerLabel
+     * @param array $rows
+     * @return string Ex: D1, Z1, EE1, etc
+     * @throws Exception
+     */
+    private static function getHeaderCellAddressFromLabel( string $headerLabel,
+                                                           array $rows ): string {
+        // Blank spreadsheet? Ok...
+        if ( empty( $rows ) ):
+            return '';
+        endif;
+
+        $firstRow  = array_shift( $rows );
+        $startChar = 'A';
+        foreach ( $firstRow as $label => $value ):
+            if ( $headerLabel == $value ):
+                return $startChar . 1;
+            endif;
+            $startChar++;
+        endforeach;
+        throw new Exception( "I could not find a header named: " . $headerLabel );
+    }
+
+
+
+
     /**
      * A wrapper around the PhpSpreadsheet library to make consistently formatted spreadsheets.
-     *
      * @param array $rows
      * @param array $totals
      * @param string $sheetName
      * @param string $path
      * @param array $options
      * @param array $columnsThatShouldBeNumbers
-     *
      * @return string
-     * @throws Exception
+     * @throws UnableToInitializeOutputFile
      */
     public static function simple( array $rows = [],
                                    array $totals = [],
@@ -89,14 +220,13 @@ class Excel {
         return $path;
     }
 
+
     /**
      * @param string $path
      * @param string|array $sheetName This should be a string containing a single worksheet name.
-     * @param IReadFilter $readFilter Only want specific columns, use this parameter.
-     *
+     * @param IReadFilter|null $readFilter Only want specific columns, use this parameter.
      * @return array
-     * @throws \PhpOffice\PhpSpreadsheetException
-     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public static function sheetToArray( string $path, $sheetName, IReadFilter $readFilter = NULL ) {
         $path_parts    = pathinfo( $path );
@@ -138,11 +268,11 @@ class Excel {
         endif;
     }
 
+
     /**
      * @param $path
      * @param int $sheetIndex
      * @return string
-     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
      */
     public static function getSheetName( $path, $sheetIndex = 0 ): string {
         $reader     = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
@@ -150,13 +280,13 @@ class Excel {
         return (string)$sheetNames[ $sheetIndex ];
     }
 
+
     /**
      * Returns the number of lines in the sheet.
      * @param $path
      * @param int $sheetIndex
      * @return int
-     * @throws \PhpOffice\PhpSpreadsheetException
-     * @throws \PhpOffice\PhpSpreadsheet\ReaderException
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public static function numLinesInSheet( $path, $sheetIndex = 0 ): int {
         $emptySheetAsArray = [
@@ -318,12 +448,12 @@ class Excel {
 
                 if ( self::shouldBeNumeric( $startChar ) ):
                     $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
+                                ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
                     $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
 
                 else:
                     $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+                                ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
                     $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
                 endif;
 
@@ -422,10 +552,8 @@ class Excel {
     }
 
     /**
-     * @param Spreadsheet $spreadsheet
+     * @param $spreadsheet
      * @param string $worksheetName
-     *
-     * @throws \PhpOffice\PhpSpreadsheetException;
      * @throws Exception
      */
     protected static function setWorksheetTitle( &$spreadsheet, $worksheetName = 'worksheet' ) {
@@ -434,8 +562,7 @@ class Excel {
             throw new Exception( "The work sheet name is empty. You need to supply a name to create a spread sheet." );
         endif;
 
-        $spreadsheet->getActiveSheet()
-                    ->setTitle( $worksheetName );
+
     }
 
 
