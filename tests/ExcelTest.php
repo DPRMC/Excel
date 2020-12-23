@@ -65,7 +65,7 @@ class ExcelTest extends TestCase {
             'ACTION' => '3',
         ];
         $options   = [];
-        $sheetName = 'testOutput.xlsx';
+        $sheetName = 'Test';
 
         $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
         $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
@@ -75,8 +75,10 @@ class ExcelTest extends TestCase {
         Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options );
         $files = scandir( $this->pathToOutputDirectory );
 
+
         array_shift( $files ); // .
         array_shift( $files ); // ..
+
 
         $this->assertCount( 3, $files ); // My two test files and the .gitignore file.
     }
@@ -101,9 +103,6 @@ class ExcelTest extends TestCase {
         ];
         $options   = [];
         $sheetName = 'testOutput.xlsx';
-
-//        var_dump(self::$unreadableSourceFilePath);
-//        var_dump(is_writable(self::$unreadableSourceFilePath));
 
         Excel::simple( $rows, $totals, $sheetName, self::$unreadableSourceFilePath, $options );
     }
@@ -245,9 +244,6 @@ class ExcelTest extends TestCase {
             'PRICE',
         ];
 
-        var_dump( $this->pathToOutputFile );
-        var_dump( is_writable( $this->pathToOutputFile ) );
-
         $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns );
         $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
 
@@ -265,21 +261,21 @@ class ExcelTest extends TestCase {
             'DATE'   => '2018-01-01',
             'ACTION' => 'BUY',
             'PRICE'  => '123.456',
-            'FORM' => '=IFERROR(((D1+2)÷4),"")'
+            'FORM' => '=SUM(D2,D3)'
         ];
         $rows[] = [
             'CUSIP'  => 'ABC123789',
             'DATE'   => '2019-01-01',
             'ACTION' => 'BUY',
             'PRICE'  => '998.342',
-            'FORM' => '=IFERROR(((D2+2)÷4),"")'
+            'FORM' => '=SUM(D3,D4)'
         ];
         $totals = [
             'CUSIP'  => '1',
             'DATE'   => '2',
             'ACTION' => '3',
             'PRICE'  => '987.654',
-            'FORM' => '=IFERROR(((D3+2)÷4),"")'
+            'FORM' => '=SUM(D2,D4)'
         ];
 
 
@@ -354,7 +350,7 @@ class ExcelTest extends TestCase {
             ];
 
 
-        $sheetName       = '';
+        $sheetName       = 'advanced Sheet';
         $options         = [];
         $columnDataTypes = [
             'CUSIP' => DataType::TYPE_STRING,
@@ -365,7 +361,7 @@ class ExcelTest extends TestCase {
             'CUSIP'   => $testStyle1,
             'ACTION'  => $testStyle2,
             'CUSIP:*' => $testStyle3,
-            'DATE:2'  => $testStyle1,
+            'DATE:4'  => $testStyle1,
         ];
 
 
@@ -376,6 +372,7 @@ class ExcelTest extends TestCase {
                                        $options,
                                        $columnDataTypes,
                                        $styles );
+
 
     }
 
