@@ -37,6 +37,8 @@ class Excel {
 
     static $columnsThatShouldBeFormulas = [];
 
+    static $columnsWithCustomNumberFormats = [];
+
     static $headerStyleArray = [
         'fill' => [
             'fillType' => Fill::FILL_SOLID,
@@ -63,7 +65,8 @@ class Excel {
                                      string $path = '',
                                      array $options = [],
                                      array $columnDataTypes = [],
-                                     array $styles = [] ) {
+                                     array $styles = [],
+                                     array $columnsWithCustomNumberFormats = [] ) {
         try {
 
             $numeric_columns = [];
@@ -84,6 +87,7 @@ class Excel {
             self::setHeaderRow( $spreadsheet, $rows );
             self::setColumnsThatShouldBeNumbers( $numeric_columns, $rows );
             self::setColumnsThatShouldBeFormulas( $formulaic_columns, $rows );
+            self::setColumnsWithCustomNumberFormats( $columnsWithCustomNumberFormats, $rows );
             self::setRows( $spreadsheet, $rows );
             self::setFooterTotals( $spreadsheet, $totals );
             self::setWorksheetTitle( $spreadsheet, $sheetName );
@@ -216,6 +220,7 @@ class Excel {
      * @param string $path
      * @param array $options
      * @param array $columnsThatShouldBeNumbers
+     * @param array $columnsWithCustomNumberFormats
      * @return string
      * @throws UnableToInitializeOutputFile
      */
@@ -224,7 +229,8 @@ class Excel {
                                    string $sheetName = 'worksheet',
                                    string $path = '',
                                    array $options = [],
-                                   array $columnsThatShouldBeNumbers = [] ) {
+                                   array $columnsThatShouldBeNumbers = [],
+                                   array $columnsWithCustomNumberFormats = []) {
         try {
 
             $spreadsheet = new Spreadsheet();
@@ -234,6 +240,7 @@ class Excel {
             self::setOrientationLandscape( $spreadsheet );
             self::setHeaderRow( $spreadsheet, $rows );
             self::setColumnsThatShouldBeNumbers( $columnsThatShouldBeNumbers, $rows );
+            self::setColumnsWithCustomNumberFormats( $columnsWithCustomNumberFormats, $rows );
             self::setRows( $spreadsheet, $rows );
             self::setFooterTotals( $spreadsheet, $totals );
             self::setWorksheetTitle( $spreadsheet, $sheetName );
@@ -472,16 +479,12 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-                    $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
-                    $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
+                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : ''  );
 
                 elseif ( self::shouldBeFormulaic( $startChar ) ):
-                    $spreadsheet->setActiveSheetIndex( 0 )->setCellValue($cellCoordinate, $value, DataType::TYPE_FORMULA);
+                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : ''   );
                 else :
-                    $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
-                    $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
+                   self::setTextCell( $spreadsheet, $cellCoordinate, $value );
                 endif;
 
 
@@ -498,6 +501,13 @@ class Excel {
      */
     protected static function shouldBeNumeric( string $startChar ): bool {
         if ( array_key_exists( $startChar, self::$columnsThatShouldBeNumbers ) ):
+            return TRUE;
+        endif;
+        return FALSE;
+    }
+
+    protected static function hasCustomNumberFormat( string $startChar ) {
+        if ( array_key_exists( $startChar, self::$columnsWithCustomNumberFormats ) ):
             return TRUE;
         endif;
         return FALSE;
@@ -556,39 +566,30 @@ class Excel {
             if ( is_array( $value ) ):
                 $multiDimensionalFooterRow = $footerRowStart;
                 foreach ( $value as $name => $childValue ):
-
+                    $cell_coordinate = $columnLetter . $multiDimensionalFooterRow;
                     if ( self::shouldBeNumeric( $columnLetter ) ):
-                        $spreadsheet->setActiveSheetIndex( 0 )
-                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow,
-                                                            $childValue, is_null( $childValue ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC);
-                        $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $multiDimensionalFooterRow )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
+                        self::setNumericCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[$columnLetter] : '' );
 
                     elseif ( self::shouldBeFormulaic( $columnLetter ) ):
-                        $spreadsheet->setActiveSheetIndex( 0 )->setCellValue($columnLetter . $multiDimensionalFooterRow, $childValue);
+                        self::setFormulaicCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[$columnLetter] : ''   );
 
                     else:
-                        $spreadsheet->setActiveSheetIndex( 0 )
-                            ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_STRING );
-                        $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $multiDimensionalFooterRow )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
+                        self::setTextCell( $spreadsheet, $cell_coordinate, $childValue );
                     endif;
 
                     $multiDimensionalFooterRow++;
                 endforeach;
             else:
-                if ( self::shouldBeNumeric( $columnLetter ) ):
-                    $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
-                    $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $footerRowStart )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
+                $cell_coordinate = $columnLetter . $footerRowStart;
+                if ( self::shouldBeNumeric( $columnLetter ) ) :
+                    self::setNumericCell( $spreadsheet, $cell_coordinate, $value,self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[$columnLetter] : ''  );
 
-                elseif ( self::shouldBeFormulaic( $columnLetter ) ):
-                    $spreadsheet->setActiveSheetIndex( 0 )->setCellValue($columnLetter . $footerRowStart, $value);
+                elseif ( self::shouldBeFormulaic( $columnLetter ) ) :
+                    self::setFormulaicCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[$columnLetter] : ''   );
 
 
                 else:
-                    $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, DataType::TYPE_STRING );
-                    $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $footerRowStart )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
-
+                    self::setTextCell( $spreadsheet, $cell_coordinate, $value );
                 endif;
 
             endif;
@@ -643,6 +644,30 @@ class Excel {
         self::$columnsThatShouldBeNumbers = $columnsWithExcelIndexes;
     }
 
+    protected static function setColumnsWithCustomNumberFormats( array $columnsWithCustomNumberFormats, array $rows ) {
+        if ( empty( $rows ) ):
+            return;
+        endif;
+
+        $columnsWithExcelIndexes = [];
+
+        $firstRow = $rows[ 0 ];
+        $keys     = array_keys( $firstRow );
+        foreach ( $columnsWithCustomNumberFormats as $columnName => $customNumberFormat ):
+            $indexFromFirstRow = array_search( $columnName, $keys );
+
+            if ( FALSE === $indexFromFirstRow ):
+                throw new Exception( "Unable to find the column named $columnName to apply custom number formats to. " );
+            endif;
+
+            $excelColumnLetter                             = self::getExcelColumnFromIndex( $indexFromFirstRow );
+            $columnsWithExcelIndexes[ $excelColumnLetter ] = $customNumberFormat;
+        endforeach;
+
+        self::$columnsWithCustomNumberFormats = $columnsWithExcelIndexes;
+
+    }
+
     /**
      * Send an array of column columns that should be treated as formulas
      * @param array $columnsThatShouldBeFormulas
@@ -685,6 +710,47 @@ class Excel {
         } catch ( Exception $exception ) {
             throw new Exception( $exception->getMessage() );
         }
+    }
+
+    /**
+     * @param $spreadsheet
+     * @param $cellCoordinate
+     * @param $value
+     * @param string $customNumberFormat
+     * @param int $activeSheetIndex
+     */
+    protected static function setNumericCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
+        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
+            ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
+        if( $customNumberFormat ) :
+            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+        endif;
+    }
+
+    /**
+     * @param $spreadsheet
+     * @param $cellCoordinate
+     * @param $value
+     * @param string $customNumberFormat
+     * @param int $activeSheetIndex
+     */
+    protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '',  $activeSheetIndex = 0 ) {
+         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->setCellValue($cellCoordinate, $value, DataType::TYPE_FORMULA );
+        if( $customNumberFormat ) :
+            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+        endif;
+    }
+
+    /**
+     * @param $spreadsheet
+     * @param $cellCoordinate
+     * @param $value
+     * @param int $activeSheetIndex
+     */
+    protected static function setTextCell( &$spreadsheet, $cellCoordinate, $value, $activeSheetIndex = 0 ) {
+        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
+            ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+        $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
     }
 
 

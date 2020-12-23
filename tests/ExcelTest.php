@@ -43,7 +43,7 @@ class ExcelTest extends TestCase {
         array_shift( $files ); // ..
         foreach ( $files as $file ):
             if ( '.gitignore' != $file ):
-                unlink( $this->pathToOutputDirectory . $file );
+                //unlink( $this->pathToOutputDirectory . $file );
             endif;
         endforeach;
     }
@@ -156,7 +156,7 @@ class ExcelTest extends TestCase {
 
 
     /**
-     * @test
+     * @test\
      * @group split
      */
     public function splitSheetShouldReturnArrayOfFilePaths() {
@@ -224,27 +224,35 @@ class ExcelTest extends TestCase {
             'DATE'   => '2018-01-01',
             'ACTION' => 'BUY',
             'PRICE'  => '123.456',
+            'FORMAT' => '123.456'
         ];
         $rows[]    = [
             'CUSIP'  => 'ABC123789',
             'DATE'   => '2019-01-01',
             'ACTION' => 'BUY',
             'PRICE'  => '998.342',
+            'FORMAT' => '998.342'
         ];
         $totals    = [
             'CUSIP'  => '1',
             'DATE'   => '2',
             'ACTION' => '3',
             'PRICE'  => '987.654',
+            'FORMAT' => '987.654'
         ];
         $options   = [];
-        $sheetName = 'testOutput.xlsx';
+        $sheetName = 'num1';
 
         $numberTypeColumns = [
             'PRICE',
+            'FORMAT'
         ];
 
-        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns );
+        $numberTypeColumnsWithCustomNumericFormats = [
+            'FORMAT' => Excel::FORMAT_NUMERIC
+        ];
+
+        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns,$numberTypeColumnsWithCustomNumericFormats  );
         $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
 
         $this->assertTrue( gettype( $sheetAsArray[ 1 ][ 3 ] ) === 'double' );
@@ -350,7 +358,7 @@ class ExcelTest extends TestCase {
             ];
 
 
-        $sheetName       = 'advanced Sheet';
+        $sheetName       = 'advanced';
         $options         = [];
         $columnDataTypes = [
             'CUSIP' => DataType::TYPE_STRING,
@@ -363,6 +371,11 @@ class ExcelTest extends TestCase {
             'CUSIP:*' => $testStyle3,
             'DATE:4'  => $testStyle1,
         ];
+        $customNumberFormats = [
+            'PRICE' => Excel::FORMAT_NUMERIC,
+            'FORM' => Excel::FORMAT_NUMERIC
+        ];
+
 
 
         $pathToFile = Excel::advanced( $rows,
@@ -371,7 +384,8 @@ class ExcelTest extends TestCase {
                                        $this->pathToOutputFile,
                                        $options,
                                        $columnDataTypes,
-                                       $styles );
+                                       $styles,
+                                       $customNumberFormats);
 
 
     }
