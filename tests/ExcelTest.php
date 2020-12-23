@@ -43,7 +43,7 @@ class ExcelTest extends TestCase {
         array_shift( $files ); // ..
         foreach ( $files as $file ):
             if ( '.gitignore' != $file ):
-                //unlink( $this->pathToOutputDirectory . $file );
+                unlink( $this->pathToOutputDirectory . $file );
             endif;
         endforeach;
     }
