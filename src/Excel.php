@@ -35,6 +35,8 @@ class Excel {
 
     static $columnsThatShouldBeNumbers = [];
 
+    static $columnsThatShouldBeFormulas = [];
+
     static $headerStyleArray = [
         'fill' => [
             'fillType' => Fill::FILL_SOLID,
@@ -64,13 +66,24 @@ class Excel {
                                      array $styles = [] ) {
         try {
 
+            $numeric_columns = [];
+            $formulaic_columns = [];
+            foreach( $columnDataTypes as $column_name => $data_type ) :
+                if ( $data_type === DataType::TYPE_NUMERIC ) :
+                    $numeric_columns[] = $column_name;
+                endif;
+                if ( $data_type === DataType::TYPE_FORMULA ) :
+                    $formulaic_columns[] = $column_name;
+                endif;
+            endforeach;
             $spreadsheet = new Spreadsheet();
             $path        = self::getUniqueFilePath( $path );
             self::initializeFile( $path );
             self::setOptions( $spreadsheet, $options );
             self::setOrientationLandscape( $spreadsheet );
             self::setHeaderRow( $spreadsheet, $rows );
-            self::setColumnsThatShouldBeNumbers( $columnDataTypes[ DataType::TYPE_NUMERIC ], $rows );
+            self::setColumnsThatShouldBeNumbers( $numeric_columns, $rows );
+            self::setColumnsThatShouldBeFormulas( $formulaic_columns, $rows );
             self::setRows( $spreadsheet, $rows );
             self::setFooterTotals( $spreadsheet, $totals );
             self::setWorksheetTitle( $spreadsheet, $sheetName );
@@ -97,39 +110,51 @@ class Excel {
             return;
         endif;
 
-        //$spreadsheet->getActiveSheet()->getStyle('B3:B7')->applyFromArray($styleArray);
+        $columns = array_keys( $rows[0] );
 
         foreach ( $styles as $cellAddress => $styleArray ):
             $cellAddressType = self::getCellAddressType( $cellAddress );
             switch ( $cellAddressType ):
                 case self::CELL_ADDRESS_TYPE_HEADER_CELL:
+                    $cell_index = array_search( $cellAddress, $columns );
+                    if( FALSE === $cell_index ) :
+                        // The column name in the style array does not exist...so skip it
+                        break;
+                    endif;
+                    $excel_column = self::getExcelColumnFromIndex( $cell_index );
+                    $spreadsheet->setActiveSheetIndex( 0 )
+                        ->getStyle( $excel_column . '1' )
+                        ->applyFromArray( $styleArray );
                     break;
 
                 case self::CELL_ADDRESS_TYPE_ALL_ROWS:
+                    $cell_address_parts = explode( ':', $cellAddress );
+                    $cell_index = array_search( $cell_address_parts[0], $columns );
+                    if( FALSE !== $cell_index ) :
+                       foreach( $rows as $i => $row ) :
+                           $excel_column = self::getExcelColumnFromIndex( $cell_index );
+                           // Apply to all rows excluding header
+                           $excel_address = $excel_column . ($i + 2);
+                           $spreadsheet->setActiveSheetIndex( 0 )
+                               ->getStyle( $excel_address)
+                               ->applyFromArray( $styleArray );
+                       endforeach;
+                    endif;
                     break;
 
                 case self::CELL_ADDRESS_TYPE_SINGLE_CELL:
+                    $cell_address_parts = explode( ':', $cellAddress );
+                    $cell_index = array_search( $cell_address_parts[0], $columns );
+                    if( FALSE !== $cell_index ) :
+                        $excel_column = self::getExcelColumnFromIndex( $cell_index );
+                        $spreadsheet->setActiveSheetIndex( 0 )
+                            ->getStyle( $excel_column . $cell_address_parts[1] )
+                            ->applyFromArray( $styleArray );
+                    endif;
                     break;
 
             endswitch;
         endforeach;
-
-
-        $startChar = 'A';
-        foreach ( $rows[ 0 ] as $field => $value ) {
-            $spreadsheet->setActiveSheetIndex( 0 )
-                        ->setCellValueExplicit( $startChar . '1', $field, DataType::TYPE_STRING );
-
-            $spreadsheet->setActiveSheetIndex( 0 )
-                        ->getStyle( $startChar . '1' )
-                        ->applyFromArray( self::$headerStyleArray );
-
-            $spreadsheet->setActiveSheetIndex( 0 )
-                        ->getColumnDimension( $startChar )
-                        ->setAutoSize( TRUE );
-
-            $startChar++;
-        }
     }
 
 
@@ -451,11 +476,14 @@ class Excel {
                                 ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
                     $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
 
-                else:
+                elseif ( self::shouldBeFormulaic( $startChar ) ):
+                    $spreadsheet->setActiveSheetIndex( 0 )->setCellValue($cellCoordinate, $value, DataType::TYPE_FORMULA);
+                else :
                     $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
+                        ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
                     $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
                 endif;
+
 
                 $startChar++;
             endforeach;
@@ -470,6 +498,18 @@ class Excel {
      */
     protected static function shouldBeNumeric( string $startChar ): bool {
         if ( array_key_exists( $startChar, self::$columnsThatShouldBeNumbers ) ):
+            return TRUE;
+        endif;
+        return FALSE;
+    }
+
+    /**
+     *
+     * @param string $startChar
+     * @return bool
+     */
+    protected static function shouldBeFormulaic( string $startChar ): bool {
+        if ( array_key_exists( $startChar, self::$columnsThatShouldBeFormulas ) ):
             return TRUE;
         endif;
         return FALSE;
@@ -520,31 +560,36 @@ class Excel {
                     if ( self::shouldBeNumeric( $columnLetter ) ):
                         $spreadsheet->setActiveSheetIndex( 0 )
                                     ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow,
-                                                            $childValue,
-                                                            DataType::TYPE_NUMERIC );
+                                                            $childValue, is_null( $childValue ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC);
+                        $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $multiDimensionalFooterRow )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
+
+                    elseif ( self::shouldBeFormulaic( $columnLetter ) ):
+                        $spreadsheet->setActiveSheetIndex( 0 )->setCellValue($columnLetter . $multiDimensionalFooterRow, $childValue);
+
                     else:
                         $spreadsheet->setActiveSheetIndex( 0 )
-                                    ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow,
-                                                            $childValue,
-                                                            DataType::TYPE_STRING );
+                            ->setCellValueExplicit( $columnLetter . $multiDimensionalFooterRow, $childValue, DataType::TYPE_STRING );
+                        $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $multiDimensionalFooterRow )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
                     endif;
-
 
                     $multiDimensionalFooterRow++;
                 endforeach;
             else:
                 if ( self::shouldBeNumeric( $columnLetter ) ):
                     $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $columnLetter . $footerRowStart,
-                                                        $value,
-                                                        DataType::TYPE_NUMERIC );
+                        ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
+                    $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $footerRowStart )->getNumberFormat()->setFormatCode( self::FORMAT_NUMERIC );
+
+                elseif ( self::shouldBeFormulaic( $columnLetter ) ):
+                    $spreadsheet->setActiveSheetIndex( 0 )->setCellValue($columnLetter . $footerRowStart, $value);
+
+
                 else:
                     $spreadsheet->setActiveSheetIndex( 0 )
-                                ->setCellValueExplicit( $columnLetter . $footerRowStart,
-                                                        $value,
-                                                        DataType::TYPE_STRING );
-                endif;
+                        ->setCellValueExplicit( $columnLetter . $footerRowStart, $value, DataType::TYPE_STRING );
+                    $spreadsheet->getActiveSheet()->getStyle( $columnLetter . $footerRowStart )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
 
+                endif;
 
             endif;
 
@@ -561,6 +606,9 @@ class Excel {
         if ( empty( $worksheetName ) ):
             throw new Exception( "The work sheet name is empty. You need to supply a name to create a spread sheet." );
         endif;
+
+        $spreadsheet->getActiveSheet()
+            ->setTitle( $worksheetName );
 
 
     }
@@ -593,6 +641,35 @@ class Excel {
         endforeach;
 
         self::$columnsThatShouldBeNumbers = $columnsWithExcelIndexes;
+    }
+
+    /**
+     * Send an array of column columns that should be treated as formulas
+     * @param array $columnsThatShouldBeFormulas
+     * @param array $rows
+     * @throws Exception
+     */
+    protected static function setColumnsThatShouldBeFormulas( array $columnsThatShouldBeFormulas, array $rows ) {
+        if ( empty( $rows ) ):
+            return;
+        endif;
+
+        $columnsWithExcelIndexes = [];
+
+        $firstRow = $rows[ 0 ];
+        $keys     = array_keys( $firstRow );
+        foreach ( $columnsThatShouldBeFormulas as $i => $columnName ):
+            $indexFromFirstRow = array_search( $columnName, $keys );
+
+            if ( FALSE === $indexFromFirstRow ):
+                throw new Exception( "Unable to find the column header named $columnName. Check your list of columns that should be formulas." );
+            endif;
+
+            $excelColumnLetter                             = self::getExcelColumnFromIndex( $indexFromFirstRow );
+            $columnsWithExcelIndexes[ $excelColumnLetter ] = $columnName;
+        endforeach;
+
+        self::$columnsThatShouldBeFormulas = $columnsWithExcelIndexes;
     }
 
 
