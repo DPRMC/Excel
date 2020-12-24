@@ -303,10 +303,10 @@ class ExcelTest extends TestCase {
                   'fillType'   => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                   'rotation'   => 90,
                   'startColor' => [
-                      'argb' => 'FFA0A0A0',
+                      'argb' => 'A0A0A0',
                   ],
                   'endColor'   => [
-                      'argb' => 'FFFFFFFF',
+                      'argb' => 'FFFFFF',
                   ],
               ],
             ];
@@ -386,6 +386,14 @@ class ExcelTest extends TestCase {
                                        $columnDataTypes,
                                        $styles,
                                        $customNumberFormats);
+
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader->setLoadSheetsOnly( $sheetName );
+
+
+        $spreadsheet = $reader->load( $pathToFile );
+        $RGB = $spreadsheet->getSheet(0)->getStyle('A1')->getFill()->getStartColor()->getRGB();
+        $this->assertTrue(  $RGB === 'A0A0A0' );
 
 
     }
