@@ -20,25 +20,58 @@ use Exception;
 class Excel {
 
     const FORMAT_NUMERIC = '0.000000####;[=0]0';
+    const CELL_ADDRESS_TYPE_HEADER_CELL = 'cell_address_type_header';
+    const CELL_ADDRESS_TYPE_ALL_ROWS    = 'cell_address_type_all_rows';
+    const CELL_ADDRESS_TYPE_SINGLE_CELL = 'cell_address_type_single_cell';
 
+    /**
+     * @var string
+     */
     static $title = 'Default Title';
 
+    /**
+     * @var string
+     */
     static $subject = 'Default Subject';
 
+    /**
+     * @var string
+     */
     static $creator = 'DPRMC Labs';
 
+    /**
+     * @var string
+     */
     static $description = 'Default description.';
 
+    /**
+     * @var string
+     */
     static $keywords = 'keywords';
 
+    /**
+     * @var string
+     */
     static $category = 'category';
 
+    /**
+     * @var array
+     */
     static $columnsThatShouldBeNumbers = [];
 
+    /**
+     * @var array
+     */
     static $columnsThatShouldBeFormulas = [];
 
+    /**
+     * @var array
+     */
     static $columnsWithCustomNumberFormats = [];
 
+    /**
+     * @var array[]
+     */
     static $headerStyleArray = [
         'fill' => [
             'fillType' => Fill::FILL_SOLID,
@@ -54,11 +87,19 @@ class Excel {
         ],
     ];
 
-    const CELL_ADDRESS_TYPE_HEADER_CELL = 'cell_address_type_header';
-    const CELL_ADDRESS_TYPE_ALL_ROWS    = 'cell_address_type_all_rows';
-    const CELL_ADDRESS_TYPE_SINGLE_CELL = 'cell_address_type_single_cell';
 
-
+    /**
+     * @param array $rows
+     * @param array $totals
+     * @param string $sheetName
+     * @param string $path
+     * @param array $options
+     * @param array $columnDataTypes
+     * @param array $styles
+     * @param array $columnsWithCustomNumberFormats
+     * @return string
+     * @throws UnableToInitializeOutputFile
+     */
     public static function advanced( array $rows = [],
                                      array $totals = [],
                                      string $sheetName = 'worksheet',
@@ -441,6 +482,10 @@ class Excel {
     }
 
 
+    /**
+     * @param $spreadsheet
+     * @param array $rows
+     */
     protected static function setHeaderRow( &$spreadsheet, $rows = [] ) {
 
         // I guess you want to create a blank spreadsheet. Go right ahead.
@@ -467,6 +512,10 @@ class Excel {
     }
 
 
+    /**
+     * @param $spreadsheet
+     * @param $rows
+     */
     protected static function setRows( &$spreadsheet, $rows ) {
         if ( empty( $rows ) ):
             return;
@@ -506,6 +555,10 @@ class Excel {
         return FALSE;
     }
 
+    /**
+     * @param string $startChar
+     * @return bool
+     */
     protected static function hasCustomNumberFormat( string $startChar ) {
         if ( array_key_exists( $startChar, self::$columnsWithCustomNumberFormats ) ):
             return TRUE;
@@ -644,6 +697,11 @@ class Excel {
         self::$columnsThatShouldBeNumbers = $columnsWithExcelIndexes;
     }
 
+    /**
+     * @param array $columnsWithCustomNumberFormats
+     * @param array $rows
+     * @throws Exception
+     */
     protected static function setColumnsWithCustomNumberFormats( array $columnsWithCustomNumberFormats, array $rows ) {
         if ( empty( $rows ) ):
             return;
