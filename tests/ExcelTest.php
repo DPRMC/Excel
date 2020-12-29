@@ -265,25 +265,30 @@ class ExcelTest extends TestCase {
      */
     public function advancedCreatesSheet() {
         $rows[] = [
-            'CUSIP'  => '123456789',
-            'DATE'   => '2018-01-01',
-            'ACTION' => 'BUY',
-            'PRICE'  => '123.456',
-            'FORM' => '=SUM(D2,D3)'
+            'CUSIP'     => '123456789',
+            'DATE'      => '2018-01-01',
+            'ACTION'    => 'BUY',
+            'PRICE'     => '123.456',
+            'NEW PRICE' => '150',
+            'FORM'      => '=IFERROR(((E2-D2)/D2),"")'
+
+
         ];
         $rows[] = [
-            'CUSIP'  => 'ABC123789',
-            'DATE'   => '2019-01-01',
-            'ACTION' => 'BUY',
-            'PRICE'  => '998.342',
-            'FORM' => '=SUM(D3,D4)'
+            'CUSIP'     => 'ABC123789',
+            'DATE'      => '2019-01-01',
+            'ACTION'    => 'BUY',
+            'PRICE'     => '998.342',
+            'NEW PRICE' => "1000.05",
+            'FORM'      => '=IFERROR(((E3-D3)/D3),"")'
         ];
         $totals = [
-            'CUSIP'  => '1',
-            'DATE'   => '2',
-            'ACTION' => '3',
-            'PRICE'  => '987.654',
-            'FORM' => '=SUM(D2,D4)'
+            'CUSIP'     => '1',
+            'DATE'      => '2',
+            'ACTION'    => '3',
+            'PRICE'     => '1121.798',
+            'NEW PRICE' => '1150.05',
+            'FORM'      => '=IFERROR(((E4-D4)/D4),"")'
         ];
 
 
@@ -361,9 +366,10 @@ class ExcelTest extends TestCase {
         $sheetName       = 'advanced';
         $options         = [];
         $columnDataTypes = [
-            'CUSIP' => DataType::TYPE_STRING,
-            'PRICE' => DataType::TYPE_NUMERIC,
-            'FORM' => DataType::TYPE_FORMULA
+            'CUSIP'     => DataType::TYPE_STRING,
+            'PRICE'     => DataType::TYPE_NUMERIC,
+            'NEW PRICE' => DataType::TYPE_NUMERIC,
+            'FORM'      => DataType::TYPE_FORMULA
         ];
         $styles          = [
             'CUSIP'   => $testStyle1,
@@ -372,8 +378,9 @@ class ExcelTest extends TestCase {
             'DATE:4'  => $testStyle1,
         ];
         $customNumberFormats = [
-            'PRICE' => Excel::FORMAT_NUMERIC,
-            'FORM' => Excel::FORMAT_NUMERIC
+            'PRICE'     => Excel::FORMAT_NUMERIC,
+            'NEW PRICE' => Excel::FORMAT_NUMERIC,
+            'FORM'      => Excel::FORMAT_NUMERIC
         ];
 
 
@@ -393,7 +400,7 @@ class ExcelTest extends TestCase {
 
         $spreadsheet = $reader->load( $pathToFile );
         $RGB = $spreadsheet->getSheet(0)->getStyle('A1')->getFill()->getStartColor()->getRGB();
-        $this->assertTrue(  $RGB === 'A0A0A0' );
+        $this->assertTrue(  $RGB === 'A0A0' );
 
 
     }
