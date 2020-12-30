@@ -106,8 +106,8 @@ class Excel {
                                      string $path = '',
                                      array $options = [],
                                      array $columnDataTypes = [],
-                                     array $styles = [],
-                                     array $columnsWithCustomNumberFormats = [] ) {
+                                     array $columnsWithCustomNumberFormats = [],
+                                     array $styles = [] ) {
         try {
 
             $numeric_columns = [];
