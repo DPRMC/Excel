@@ -391,8 +391,8 @@ class ExcelTest extends TestCase {
                                        $this->pathToOutputFile,
                                        $options,
                                        $columnDataTypes,
-                                       $styles,
-                                       $customNumberFormats);
+                                       $customNumberFormats,
+                                       $styles );
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $reader->setLoadSheetsOnly( $sheetName );
@@ -405,5 +405,71 @@ class ExcelTest extends TestCase {
 
     }
 
+    /**
+     * @test
+     * @group formula
+     */
+    public function formulaCellShouldCalculateValue() {
+        $rows[] = [
+            'CUSIP'     => '123456789',
+            'DATE'      => '2018-01-01',
+            'ACTION'    => 'BUY',
+            'PRICE'     => '75',
+            'NEW PRICE' => '150',
+            'FORM'      => '=IFERROR(((E2-D2)/D2),"")'
+
+
+        ];
+        $rows[] = [
+            'CUSIP'     => 'ABC123789',
+            'DATE'      => '2019-01-01',
+            'ACTION'    => 'BUY',
+            'PRICE'     => '200',
+            'NEW PRICE' => "150",
+            'FORM'      => '=IFERROR(((E3-D3)/D3),"")'
+        ];
+        $totals = [
+            'CUSIP'     => '1',
+            'DATE'      => '2',
+            'ACTION'    => '3',
+            'PRICE'     => '275',
+            'NEW PRICE' => '300',
+            'FORM'      => '=IFERROR(((E4-D4)/D4),"")'
+        ];
+
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [
+            'CUSIP'     => DataType::TYPE_STRING,
+            'PRICE'     => DataType::TYPE_NUMERIC,
+            'NEW PRICE' => DataType::TYPE_NUMERIC,
+            'FORM'      => DataType::TYPE_FORMULA
+        ];
+
+        $customNumberFormats = [
+            'PRICE'     => Excel::FORMAT_NUMERIC,
+            'NEW PRICE' => Excel::FORMAT_NUMERIC,
+            'FORM'      => Excel::FORMAT_NUMERIC
+        ];
+
+
+
+        $pathToFile = Excel::advanced( $rows,
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
+
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader->setLoadSheetsOnly( $sheetName );
+
+
+        $spreadsheet = $reader->load( $pathToFile );
+        $value = $spreadsheet->getActiveSheet()->getCell('F3')->getCalculatedValue();
+        $this->assertTrue(  $value === -.25 );
+
+    }
 
 }
