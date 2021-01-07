@@ -55,10 +55,10 @@ You can see we create multiple associative arrays:
 - $columnsWithCustomWidths
 - $styles
 
-This optional associative array parameter will apply the value of the array as the Data Type to the column cells corresponding to the array key
-This optional associative array parameter will apply the number format value of the array to the column cells corresponding to the array key
-This optional associative array parameter will apply the width value of the array to the column cells corresponding to the array key
-This optional associative array parameter will apply the style values of the $styles array to the corresponding column headers, non-header cells, or a specific cell.
+The '$columnDataTypes' optional associative array parameter will apply the value of the array as the Data Type to the column cells corresponding to the array key.
+The '$columnsWithCustomNumberFormats' optional associative array parameter will apply the number format value of the array to the column cells corresponding to the array key.
+The '$columnsWithCustomWidths' optional associative array parameter will apply the width value of the array to the column cells corresponding to the array key.
+The '$styles' optional associative array parameter will apply the style values of the $styles array to the corresponding column headers, non-header cells, or to a specific cell.
 
 Additionally, an optional boolean parameter '$freezeHeader' will determine if the header row will be frozen.  Defaults to 'TRUE'. 
 
