@@ -95,8 +95,10 @@ class Excel {
      * @param string $path
      * @param array $options
      * @param array $columnDataTypes
-     * @param array $styles
      * @param array $columnsWithCustomNumberFormats
+     * @param array $styles
+     * @param array $columnsWithCustomWidths
+     * @param bool $freezeHeader
      * @return string
      * @throws UnableToInitializeOutputFile
      */
@@ -107,9 +109,10 @@ class Excel {
                                      array $options = [],
                                      array $columnDataTypes = [],
                                      array $columnsWithCustomNumberFormats = [],
-                                     array $styles = [] ) {
+                                     array $columnsWithCustomWidths = [],
+                                     array $styles = [],
+                                     bool $freezeHeader = true) {
         try {
-
             $numeric_columns = [];
             $formulaic_columns = [];
             foreach( $columnDataTypes as $column_name => $data_type ) :
@@ -125,16 +128,15 @@ class Excel {
             self::initializeFile( $path );
             self::setOptions( $spreadsheet, $options );
             self::setOrientationLandscape( $spreadsheet );
-            self::setHeaderRow( $spreadsheet, $rows );
+            self::setHeaderRow( $spreadsheet, $rows, $columnsWithCustomWidths );
             self::setColumnsThatShouldBeNumbers( $numeric_columns, $rows );
             self::setColumnsThatShouldBeFormulas( $formulaic_columns, $rows );
             self::setColumnsWithCustomNumberFormats( $columnsWithCustomNumberFormats, $rows );
             self::setRows( $spreadsheet, $rows );
             self::setFooterTotals( $spreadsheet, $totals );
             self::setWorksheetTitle( $spreadsheet, $sheetName );
-
             self::setStyles( $spreadsheet, $rows, $styles );
-
+            self::freezeHeader( $spreadsheet, $freezeHeader );
             self::writeSpreadsheet( $spreadsheet, $path );
         } catch ( Exception $e ) {
             throw $e;
@@ -200,6 +202,13 @@ class Excel {
 
             endswitch;
         endforeach;
+    }
+
+    protected static function freezeHeader( &$spreadsheet, bool $freezeHeader = true  ) {
+
+        if($freezeHeader) :
+            $spreadsheet->getActiveSheet()->freezePane('A2');
+        endif;
     }
 
 
@@ -486,7 +495,7 @@ class Excel {
      * @param $spreadsheet
      * @param array $rows
      */
-    protected static function setHeaderRow( &$spreadsheet, $rows = [] ) {
+    protected static function setHeaderRow( &$spreadsheet, $rows = [], $columnsWithCustomWidths = [] ) {
 
         // I guess you want to create a blank spreadsheet. Go right ahead.
         if ( empty( $rows ) ):
@@ -496,6 +505,8 @@ class Excel {
         // Set header row
         $startChar = 'A';
         foreach ( $rows[ 0 ] as $field => $value ) {
+
+
             $spreadsheet->setActiveSheetIndex( 0 )
                         ->setCellValueExplicit( $startChar . '1', $field, DataType::TYPE_STRING );
 
@@ -503,10 +514,13 @@ class Excel {
                         ->getStyle( $startChar . '1' )
                         ->applyFromArray( self::$headerStyleArray );
 
-            $spreadsheet->setActiveSheetIndex( 0 )
-                        ->getColumnDimension( $startChar )
-                        ->setAutoSize( TRUE );
+            if( array_key_exists( $field, $columnsWithCustomWidths ) ) :
+                $spreadsheet->getActiveSheet()->getColumnDimension($startChar)->setWidth($columnsWithCustomWidths[$field] );
+            else :
+                $spreadsheet->setActiveSheetIndex( 0 )->getColumnDimension( $startChar )->setAutoSize( TRUE );
+            endif;
 
+            $spreadsheet->setActiveSheetIndex( 0 )->getStyle( $startChar . '1' )->getAlignment()->setWrapText(true);
             $startChar++;
         }
     }
@@ -528,7 +542,7 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : ''  );
+                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : self::FORMAT_NUMERIC  );
 
                 elseif ( self::shouldBeFormulaic( $startChar ) ):
                     self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : ''   );
