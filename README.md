@@ -105,7 +105,7 @@ $columnsWithCustomWidths = [
 $styles = [
     'CUSIP'   => [ 'font' => [ 'bold' => TRUE ] ], // Apply style to column header
     'CUSIP:*' => [ 'borders' => [ 'top' => [ 'borderStyle' => 'thin'] ] ], // Apply style to all column rows except header row
-    'DATE:4'  => [ 'fill' => [ 'fillType'   => 'linear', 'rotation' => 90 ] ] // Apply style to cell in column and specified row 
+    'DATE:4'  => [ 'fill' => [ 'fillType' => 'linear', 'rotation' => 90 ] ] // Apply style to cell in column and specified row 
 ];
 
 $freezeHeader = TRUE;
