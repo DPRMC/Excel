@@ -94,7 +94,7 @@ $columnDataTypes = [
     'FORM'  => DataType::TYPE_FORMULA
 ];
 $columnsWithCustomNumberFormats = [
-    'PRICE' => Excel::FORMAT_GENERAL,
+    'PRICE' => Excel::FORMAT_NUMERIC,
     'FORM'  => NumberFormat::FORMAT_NUMBER
 ];
 $columnsWithCustomWidths = [
