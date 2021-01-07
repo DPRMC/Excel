@@ -56,9 +56,13 @@ You can see we create multiple associative arrays:
 - $styles
 
 The '$columnDataTypes' optional associative array parameter will apply the value of the array as the Data Type to the column cells corresponding to the array key.
+
 The '$columnsWithCustomNumberFormats' optional associative array parameter will apply the number format value of the array to the column cells corresponding to the array key.
+
 The '$columnsWithCustomWidths' optional associative array parameter will apply the width value of the array to the column cells corresponding to the array key.
+
 The '$styles' optional associative array parameter will apply the style values of the $styles array to the corresponding column headers, non-header cells, or to a specific cell.
+
 Additionally, an optional boolean parameter '$freezeHeader' will determine if the header row will be frozen.  Defaults to 'TRUE'. 
 
 If the output file already exists, this method will append a timestamp at the end to try to make a unique filename.
@@ -100,7 +104,7 @@ $columnsWithCustomWidths = [
 ];
 $styles = [
     'CUSIP'   => [ 'font' => [ 'bold' => TRUE ] ], // Apply style to column header
-    'CUSIP:*' => [ 'borders' => [ 'top' => [ 'borderStyle' => 'thin'] ] ], // Apply style no all column rows except header row
+    'CUSIP:*' => [ 'borders' => [ 'top' => [ 'borderStyle' => 'thin'] ] ], // Apply style to all column rows except header row
     'DATE:4'  => [ 'fill' => [ 'fillType'   => 'linear', 'rotation' => 90 ] ] // Apply style to cell in column and specified row 
 ];
 
