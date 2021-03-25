@@ -9,6 +9,8 @@ use org\bovigo\vfs\vfsStream;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PHPUnit\Framework\TestCase;
+use Exception;
+
 
 class ExcelTest extends TestCase {
 
@@ -486,6 +488,141 @@ class ExcelTest extends TestCase {
 
     }
 
+    /**
+     * @test
+     * @group text
+     */
+    public function dataTypeStringShouldAcceptNumberFormats()
+    {
+        $rows[] = [
+            'CUSIP'     => '123456789',
+        ];
+        $totals = [];
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [
+            'CUSIP'     => DataType::TYPE_STRING
+        ];
+        $customNumberFormats = [
+            'CUSIP'     => NumberFormat::FORMAT_GENERAL
+        ];
+        $pathToFile = Excel::advanced( $rows,
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
+
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader->setLoadSheetsOnly( $sheetName );
 
 
+        $spreadsheet = $reader->load( $pathToFile );
+        $numberFormat = $spreadsheet->getActiveSheet()->getStyle('A2')->getNumberFormat();
+        $formatCode = $numberFormat->getFormatCode();
+        $this->assertTrue(  $formatCode === 'General' );
+    }
+
+    /**
+     * @test
+     * @group exception
+     */
+    public function invalidFormulaColumnNameShouldThrowException()
+    {
+        $this->expectException( Exception::class );
+        $rows[] = [
+            'CUSIP'     => '123456789',
+        ];
+        $totals = [];
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [
+            'InvalidName'     => DataType::TYPE_FORMULA
+        ];
+        $customNumberFormats = [];
+
+        $pathToFile = Excel::advanced( $rows,
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
+
+
+    }
+
+    /**
+     * @test
+     * @group exception
+     */
+    public function invalidNumericColumnNameShouldThrowException()
+    {
+        $this->expectException( Exception::class );
+        $rows[] = [
+            'CUSIP'     => '123456789',
+        ];
+        $totals = [];
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [];
+        $customNumberFormats = [
+            'InvalidName'     => NumberFormat::FORMAT_GENERAL
+        ];
+
+        $pathToFile = Excel::advanced( $rows,
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
+
+
+    }
+
+    /**
+     * @test
+     * @group exception
+     */
+    public function invalidNumberTypeColumnNameShouldThrowException() {
+        $this->expectException( Exception::class );
+        $rows[]    = [
+            'CUSIP'  => '123456789'
+        ];
+        $totals    = [];
+        $options   = [];
+        $sheetName = 'num1';
+
+        $numberTypeColumns = [
+            'InvalidNumberColumnName'
+        ];
+
+        $numberTypeColumnsWithCustomNumericFormats = [];
+
+        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns,$numberTypeColumnsWithCustomNumericFormats  );
+
+    }
+
+    /**
+     * @test
+     * @group exception
+     */
+    public function blankSheetNameShouldThrowException() {
+        $this->expectException( Exception::class );
+        $rows[]    = [
+            'CUSIP'  => '123456789'
+        ];
+        $totals    = [];
+        $options   = [];
+        $sheetName = '';
+
+        $numberTypeColumns = [];
+
+        $numberTypeColumnsWithCustomNumericFormats = [];
+
+        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns,$numberTypeColumnsWithCustomNumericFormats  );
+
+    }
 }
