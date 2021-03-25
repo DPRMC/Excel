@@ -542,12 +542,12 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : self::FORMAT_NUMERIC  );
+                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : self::FORMAT_NUMERIC );
 
                 elseif ( self::shouldBeFormulaic( $startChar ) ):
-                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : ''   );
+                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : '' );
                 else :
-                   self::setTextCell( $spreadsheet, $cellCoordinate, $value );
+                   self::setTextCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[$startChar] : '' );
                 endif;
 
 
@@ -806,7 +806,7 @@ class Excel {
      * @param string $customNumberFormat
      * @param int $activeSheetIndex
      */
-    protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '',  $activeSheetIndex = 0 ) {
+    protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
          $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->setCellValue($cellCoordinate, $value, DataType::TYPE_FORMULA );
         if( $customNumberFormat ) :
             $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
@@ -819,10 +819,13 @@ class Excel {
      * @param $value
      * @param int $activeSheetIndex
      */
-    protected static function setTextCell( &$spreadsheet, $cellCoordinate, $value, $activeSheetIndex = 0 ) {
+    protected static function setTextCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
             ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
         $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
+        if( $customNumberFormat ) :
+            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+        endif;
     }
 
 
