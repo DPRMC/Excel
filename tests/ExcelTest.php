@@ -220,6 +220,21 @@ class ExcelTest extends TestCase {
         $this->assertEquals( 'test', $sheetName );
     }
 
+    /**
+     * @test
+     * @group meta
+     */
+    public function getDescriptionShouldReturnMetaDescription() {
+        $sheetName = 'metaDescription';
+        $options = ['description' => 'Meta Description'];
+        $pathToFile = Excel::advanced( [], [], $sheetName, $this->pathToOutputFile, $options );
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader->setLoadSheetsOnly( $sheetName );
+        $spreadsheet = $reader->load( $pathToFile );
+        $retrievedMetaDescription = $spreadsheet->getProperties()->getDescription();
+        $this->assertEquals( $options['description'], $retrievedMetaDescription );
+    }
+
 
     /**
      * @test
