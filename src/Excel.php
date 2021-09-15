@@ -310,7 +310,7 @@ class Excel {
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public static function sheetToArray( string $path, $sheetName, IReadFilter $readFilter = NULL ) {
+    public static function sheetToArray( string $path, $sheetName = null, IReadFilter $readFilter = NULL ) {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
 
