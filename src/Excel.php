@@ -335,6 +335,40 @@ class Excel {
 
 
     /**
+     * Use this guy when you don't know what the sheet name is.
+     * @param string $path
+     * @param int|null $index
+     * @param IReadFilter|null $readFilter
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+    public static function sheetByIndexToArray( string $path, int $index = null, IReadFilter $readFilter = NULL ): array {
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
+
+        switch ( $fileExtension ):
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+//        $reader->setLoadSheetsOnly( $sheetName );
+        $reader->setLoadAllSheets();
+
+        if ( $readFilter ):
+            $reader->setReadFilter( $readFilter );
+        endif;
+
+        $spreadsheet = $reader->load( $path );
+
+        return $spreadsheet->setActiveSheetIndex( $index )->toArray();
+    }
+
+
+    /**
      * Given a zero based index from a php array, this method will return the Excel column equivalent.
      * @param $index
      * @return string
