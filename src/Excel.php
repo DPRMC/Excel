@@ -301,7 +301,6 @@ class Excel {
     }
 
 
-
     /**
      * @param string $path
      * @param null $sheetName This should be a string containing a single worksheet name.
@@ -346,15 +345,24 @@ class Excel {
     }
 
 
+
+
     /**
-     * Use this guy when you don't know what the sheet name is.
      * @param string $path
-     * @param int|null $index
-     * @param IReadFilter|null $readFilter
+     * @param int|null $index This should be the index of the sheet.
+     * @param IReadFilter|null $readFilter // Only want specific columns, use this parameter.
+     * @param null $nullValue
+     * @param bool $calculateFormulas
+     * @param bool $formatData // Set to false if you want total precision of numbers, and not formatted.
+     * @param bool $returnCellRef
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public static function sheetByIndexToArray( string $path, int $index = NULL, IReadFilter $readFilter = NULL ): array {
+    public static function sheetByIndexToArray( string $path, int $index = NULL, IReadFilter $readFilter = NULL,
+                                                       $nullValue = NULL,
+                                                bool   $calculateFormulas = TRUE,
+                                                bool   $formatData = TRUE,
+                                                bool   $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
 
@@ -376,7 +384,10 @@ class Excel {
 
         $spreadsheet = $reader->load( $path );
 
-        return $spreadsheet->setActiveSheetIndex( $index )->toArray();
+        return $spreadsheet->setActiveSheetIndex( $index )->toArray($nullValue,
+                                                                    $calculateFormulas,
+                                                                    $formatData,
+                                                                    $returnCellRef );
     }
 
 
