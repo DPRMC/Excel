@@ -301,10 +301,15 @@ class Excel {
     }
 
 
+
     /**
      * @param string $path
-     * @param string|array $sheetName This should be a string containing a single worksheet name.
+     * @param null $sheetName This should be a string containing a single worksheet name.
      * @param IReadFilter|null $readFilter Only want specific columns, use this parameter.
+     * @param null $nullValue
+     * @param bool $calculateFormulas
+     * @param bool $formatData Set to false if you want total precision of numbers, and not formatted.
+     * @param bool $returnCellRef
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
@@ -314,7 +319,7 @@ class Excel {
                                                      $nullValue = NULL,
                                          bool        $calculateFormulas = TRUE,
                                          bool        $formatData = TRUE,
-                                         bool        $returnCellRef = FALSE ) {
+                                         bool        $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
 
@@ -334,7 +339,10 @@ class Excel {
         endif;
 
         $spreadsheet = $reader->load( $path );
-        return $spreadsheet->setActiveSheetIndexByName( $sheetName )->toArray( $nullValue, $calculateFormulas, $formatData, $returnCellRef );
+        return $spreadsheet->setActiveSheetIndexByName( $sheetName )->toArray( $nullValue,
+                                                                               $calculateFormulas,
+                                                                               $formatData,
+                                                                               $returnCellRef );
     }
 
 
