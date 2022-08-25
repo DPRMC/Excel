@@ -414,9 +414,51 @@ class Excel {
      * @return string
      */
     public static function getSheetName( $path, $sheetIndex = 0 ): string {
-        $reader     = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
+
+        switch ( $fileExtension ):
+            case 'csv':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                break;
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+
         $sheetNames = $reader->listWorksheetNames( $path );
         return (string)$sheetNames[ $sheetIndex ];
+    }
+
+
+    /**
+     * @param $path
+     * @return array
+     */
+    public static function getSheetNames( $path ): array {
+
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
+
+        switch ( $fileExtension ):
+            case 'csv':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                break;
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+
+        return $reader->listWorksheetNames( $path );
     }
 
 
