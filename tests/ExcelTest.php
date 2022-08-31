@@ -640,4 +640,39 @@ class ExcelTest extends TestCase {
         $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns,$numberTypeColumnsWithCustomNumericFormats  );
 
     }
+
+    /**
+     * @test
+     * @group ord
+     */
+    public function shouldReturnPhpArrayIndexFromExcelColumnLetters(){
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('a');
+        $this->assertEquals(0, $arrayIndex);
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('Z');
+        $this->assertEquals(25, $arrayIndex);
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('AA');
+        $this->assertEquals(26, $arrayIndex);
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('GX');
+        $this->assertEquals(205, $arrayIndex);
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('AAA');
+        $this->assertEquals(702, $arrayIndex);
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('AAB');
+        $this->assertEquals(703, $arrayIndex);
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('AAZ');
+        $this->assertEquals(727, $arrayIndex);
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('BAA');
+        $this->assertEquals(1378, $arrayIndex);
+
+        // The biggest column in Excel is XFD
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn('XFD');
+        $this->assertEquals(16383, $arrayIndex);
+    }
 }

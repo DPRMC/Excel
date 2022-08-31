@@ -345,8 +345,6 @@ class Excel {
     }
 
 
-
-
     /**
      * @param string $path
      * @param int|null $index This should be the index of the sheet.
@@ -384,10 +382,10 @@ class Excel {
 
         $spreadsheet = $reader->load( $path );
 
-        return $spreadsheet->setActiveSheetIndex( $index )->toArray($nullValue,
-                                                                    $calculateFormulas,
-                                                                    $formatData,
-                                                                    $returnCellRef );
+        return $spreadsheet->setActiveSheetIndex( $index )->toArray( $nullValue,
+                                                                     $calculateFormulas,
+                                                                     $formatData,
+                                                                     $returnCellRef );
     }
 
 
@@ -405,6 +403,32 @@ class Excel {
         else:
             return $letter;
         endif;
+    }
+
+
+    /**
+     * @param string $excelColumnLetters XFD
+     * @return int 16383
+     */
+    public static function getPhpArrayIndexFromExcelColumn( string $excelColumnLetters ): int {
+        $excelColumnLetters = strtoupper( $excelColumnLetters );
+        $array              = str_split( $excelColumnLetters );
+        $placeCounter       = 0;
+
+        // Reverse only the keys in the array.
+        // Leave the letters (values) in the order they were.
+        // The key will serve as the exponent.
+        $array = array_combine( array_reverse( array_keys( $array ) ), $array );
+
+        //
+        foreach ( $array as $count => $letter ):
+            $singleLetterValue = ord( $letter ) - 64;
+            $baseOfPlace = pow( 26, $count );
+            $valueOfLetter = $baseOfPlace * $singleLetterValue;
+            $placeCounter += $valueOfLetter;
+        endforeach;
+        $phpIndex = $placeCounter - 1;
+        return $phpIndex;
     }
 
 
@@ -533,7 +557,8 @@ class Excel {
     protected static function getUniqueFilePath( $startingPath = '' ) {
         if ( file_exists( $startingPath ) ) {
             $filename_ext = pathinfo( $startingPath, PATHINFO_EXTENSION );
-            $startingPath = preg_replace( '/^(.*)\.' . $filename_ext . '$/', '$1_' . date( 'YmdHis' ) . '.' . $filename_ext, $startingPath );
+            $startingPath =
+                preg_replace( '/^(.*)\.' . $filename_ext . '$/', '$1_' . date( 'YmdHis' ) . '.' . $filename_ext, $startingPath );
 
             if ( is_null( $startingPath ) ) {
                 throw new Exception( "The php function preg_replace (called in Excel::getUniqueFilePath()) returned null, indicating an error." );
@@ -614,7 +639,9 @@ class Excel {
                         ->applyFromArray( self::$headerStyleArray );
 
             if ( array_key_exists( $field, $columnsWithCustomWidths ) ) :
-                $spreadsheet->getActiveSheet()->getColumnDimension( $startChar )->setWidth( $columnsWithCustomWidths[ $field ] );
+                $spreadsheet->getActiveSheet()
+                            ->getColumnDimension( $startChar )
+                            ->setWidth( $columnsWithCustomWidths[ $field ] );
             else :
                 $spreadsheet->setActiveSheetIndex( 0 )->getColumnDimension( $startChar )->setAutoSize( TRUE );
             endif;
@@ -641,12 +668,15 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[ $startChar ] : self::FORMAT_NUMERIC );
+                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                        self::$columnsWithCustomNumberFormats[ $startChar ] : self::FORMAT_NUMERIC );
 
                 elseif ( self::shouldBeFormulaic( $startChar ) ):
-                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
+                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                        self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
                 else :
-                    self::setTextCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
+                    self::setTextCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                        self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
                 endif;
 
 
@@ -734,10 +764,12 @@ class Excel {
                 foreach ( $value as $name => $childValue ):
                     $cell_coordinate = $columnLetter . $multiDimensionalFooterRow;
                     if ( self::shouldBeNumeric( $columnLetter ) ):
-                        self::setNumericCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                        self::setNumericCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
+                            self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
                     elseif ( self::shouldBeFormulaic( $columnLetter ) ):
-                        self::setFormulaicCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                        self::setFormulaicCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
+                            self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
                     else:
                         self::setTextCell( $spreadsheet, $cell_coordinate, $childValue );
@@ -748,10 +780,12 @@ class Excel {
             else:
                 $cell_coordinate = $columnLetter . $footerRowStart;
                 if ( self::shouldBeNumeric( $columnLetter ) ) :
-                    self::setNumericCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                    self::setNumericCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
+                        self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
                 elseif ( self::shouldBeFormulaic( $columnLetter ) ) :
-                    self::setFormulaicCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                    self::setFormulaicCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
+                        self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
 
                 else:
@@ -892,9 +926,13 @@ class Excel {
      */
     protected static function setNumericCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
-                    ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
+                    ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL :
+                        DataType::TYPE_NUMERIC );
         if ( $customNumberFormat ) :
-            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+            $spreadsheet->getActiveSheet()
+                        ->getStyle( $cellCoordinate )
+                        ->getNumberFormat()
+                        ->setFormatCode( $customNumberFormat );
         endif;
     }
 
@@ -906,9 +944,13 @@ class Excel {
      * @param int $activeSheetIndex
      */
     protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
-        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->setCellValue( $cellCoordinate, $value, DataType::TYPE_FORMULA );
+        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
+                    ->setCellValue( $cellCoordinate, $value, DataType::TYPE_FORMULA );
         if ( $customNumberFormat ) :
-            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+            $spreadsheet->getActiveSheet()
+                        ->getStyle( $cellCoordinate )
+                        ->getNumberFormat()
+                        ->setFormatCode( $customNumberFormat );
         endif;
     }
 
@@ -921,9 +963,15 @@ class Excel {
     protected static function setTextCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
                     ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
-        $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
+        $spreadsheet->getActiveSheet()
+                    ->getStyle( $cellCoordinate )
+                    ->getNumberFormat()
+                    ->setFormatCode( NumberFormat::FORMAT_TEXT );
         if ( $customNumberFormat ) :
-            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+            $spreadsheet->getActiveSheet()
+                        ->getStyle( $cellCoordinate )
+                        ->getNumberFormat()
+                        ->setFormatCode( $customNumberFormat );
         endif;
     }
 
