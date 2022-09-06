@@ -461,6 +461,26 @@ class Excel {
 
 
     /**
+     * Some other methods here require the sheet index, instead of the name.
+     * Why not have a little helper to get that for you.
+     * @param string $path The absolute path to the spreadsheet file.
+     * @param string $sheetName The sheet (tab) name that you want the index of.
+     * @return int The numeric index of the sheet in question.
+     * @throws Exception Thrown if unable to locate a sheet with $sheetName
+     */
+    public static function getSheetIndexByName( string $path, string $sheetName ): int {
+        $sheetNames = self::getSheetNames( $path );
+        $index      = array_search( $sheetName, $sheetNames );
+
+        if ( FALSE === $index ):
+            throw new \Exception( "Unable to find sheet named: " . $sheetName );
+        endif;
+
+        return (int)$index;
+    }
+
+
+    /**
      * @param $path
      * @return array
      */
