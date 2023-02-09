@@ -333,6 +333,9 @@ class Excel {
         endswitch;
         $reader->setLoadSheetsOnly( $sheetName );
 
+        // 2023-02-09:mdd
+        $reader->setReadDataOnly(true);
+
         if ( $readFilter ):
             $reader->setReadFilter( $readFilter );
         endif;
