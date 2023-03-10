@@ -334,7 +334,7 @@ class Excel {
         $reader->setLoadSheetsOnly( $sheetName );
 
         // 2023-02-09:mdd
-        $reader->setReadDataOnly(true);
+        $reader->setReadDataOnly( TRUE );
 
         if ( $readFilter ):
             $reader->setReadFilter( $readFilter );
@@ -426,9 +426,9 @@ class Excel {
         //
         foreach ( $array as $count => $letter ):
             $singleLetterValue = ord( $letter ) - 64;
-            $baseOfPlace = pow( 26, $count );
-            $valueOfLetter = $baseOfPlace * $singleLetterValue;
-            $placeCounter += $valueOfLetter;
+            $baseOfPlace       = pow( 26, $count );
+            $valueOfLetter     = $baseOfPlace * $singleLetterValue;
+            $placeCounter      += $valueOfLetter;
         endforeach;
         $phpIndex = $placeCounter - 1;
         return $phpIndex;
@@ -960,15 +960,20 @@ class Excel {
     }
 
     /**
-     * @param $spreadsheet
+     * @param Spreadsheet $spreadsheet
      * @param $cellCoordinate
      * @param $value
      * @param string $customNumberFormat
      * @param int $activeSheetIndex
      */
-    protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
+    protected static function setFormulaicCell( Spreadsheet &$spreadsheet,
+                                                            $cellCoordinate,
+                                                            $value,
+                                                string      $customNumberFormat = '',
+                                                int         $activeSheetIndex = 0 ) {
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
-                    ->setCellValue( $cellCoordinate, $value, DataType::TYPE_FORMULA );
+            // ->setCellValue( $cellCoordinate, $value, DataType::TYPE_FORMULA );
+                    ->setCellValue( $cellCoordinate, $value ); // 2023-03-10:mdd
         if ( $customNumberFormat ) :
             $spreadsheet->getActiveSheet()
                         ->getStyle( $cellCoordinate )
