@@ -2,6 +2,7 @@
 
 namespace DPRMC\Excel;
 
+use Carbon\Carbon;
 use DPRMC\Excel\Exceptions\UnableToInitializeOutputFile;
 use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -345,6 +346,52 @@ class Excel {
                                                                                $calculateFormulas,
                                                                                $formatData,
                                                                                $returnCellRef );
+    }
+
+    public static function sheetHeaderToArray( string $path, $sheetName = NULL ): array {
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
+
+
+        $sheetName = 'LL_Res_LOC';
+        switch ( $fileExtension ):
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+        $reader->setLoadSheetsOnly( $sheetName );
+
+        // 2023-02-09:mdd
+        $reader->setReadDataOnly( TRUE );
+
+//        if ( $readFilter ):
+//            $reader->setReadFilter( $readFilter );
+//        endif;
+        $spreadsheet = $reader->load( $path );
+        $headerFooter     = $spreadsheet->setActiveSheetIndexByName( $sheetName )->getHeaderFooter();
+        var_dump( $headerFooter->getEvenHeader() );
+        var_dump( $headerFooter->getOddHeader() );
+        var_dump( $headerFooter->getFirstHeader() );
+        var_dump( $headerFooter->getDifferentFirst() );
+        var_dump( $headerFooter->getImages() );
+        var_dump( $headerFooter->getScaleWithDocument() );
+        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getCreated(), 'America/New_York')->toDateString() );
+        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getModified(), 'America/New_York')->toDateString() );
+
+        dump($spreadsheet->getProperties()->getSubject());
+        dump($spreadsheet->getProperties()->getCategory());
+        dump($spreadsheet->getProperties()->getDescription());
+
+
+//        $spreadsheet->setActiveSheetIndexByName( $sheetName )->
+
+        dump($sheetName);
+        dd('done');
+        return $headers;
     }
 
 
