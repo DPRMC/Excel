@@ -348,7 +348,17 @@ class Excel {
                                                                                $returnCellRef );
     }
 
+
+    /**
+     * Work in progress...
+     * @param string $path
+     * @param $sheetName
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
     public static function sheetHeaderToArray( string $path, $sheetName = NULL ): array {
+        $headers = [];
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
 
@@ -373,24 +383,24 @@ class Excel {
 //        endif;
         $spreadsheet = $reader->load( $path );
         $headerFooter     = $spreadsheet->setActiveSheetIndexByName( $sheetName )->getHeaderFooter();
-        var_dump( $headerFooter->getEvenHeader() );
-        var_dump( $headerFooter->getOddHeader() );
-        var_dump( $headerFooter->getFirstHeader() );
-        var_dump( $headerFooter->getDifferentFirst() );
-        var_dump( $headerFooter->getImages() );
-        var_dump( $headerFooter->getScaleWithDocument() );
-        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getCreated(), 'America/New_York')->toDateString() );
-        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getModified(), 'America/New_York')->toDateString() );
-
-        dump($spreadsheet->getProperties()->getSubject());
-        dump($spreadsheet->getProperties()->getCategory());
-        dump($spreadsheet->getProperties()->getDescription());
+//        var_dump( $headerFooter->getEvenHeader() );
+//        var_dump( $headerFooter->getOddHeader() );
+//        var_dump( $headerFooter->getFirstHeader() );
+//        var_dump( $headerFooter->getDifferentFirst() );
+//        var_dump( $headerFooter->getImages() );
+//        var_dump( $headerFooter->getScaleWithDocument() );
+//        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getCreated(), 'America/New_York')->toDateString() );
+//        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getModified(), 'America/New_York')->toDateString() );
+//
+//        dump($spreadsheet->getProperties()->getSubject());
+//        dump($spreadsheet->getProperties()->getCategory());
+//        dump($spreadsheet->getProperties()->getDescription());
 
 
 //        $spreadsheet->setActiveSheetIndexByName( $sheetName )->
 
-        dump($sheetName);
-        dd('done');
+//        dump($sheetName);
+//        dd('done');
         return $headers;
     }
 
