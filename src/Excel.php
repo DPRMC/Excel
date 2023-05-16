@@ -322,6 +322,7 @@ class Excel {
                                          bool        $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower($fileExtension);
 
         switch ( $fileExtension ):
             case 'xls':
@@ -358,10 +359,10 @@ class Excel {
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
     public static function sheetHeaderToArray( string $path, $sheetName = NULL ): array {
-        $headers = [];
+        $headers       = [];
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
-
+        $fileExtension = strtolower( $fileExtension );
 
         $sheetName = 'LL_Res_LOC';
         switch ( $fileExtension ):
@@ -381,8 +382,8 @@ class Excel {
 //        if ( $readFilter ):
 //            $reader->setReadFilter( $readFilter );
 //        endif;
-        $spreadsheet = $reader->load( $path );
-        $headerFooter     = $spreadsheet->setActiveSheetIndexByName( $sheetName )->getHeaderFooter();
+        $spreadsheet  = $reader->load( $path );
+        $headerFooter = $spreadsheet->setActiveSheetIndexByName( $sheetName )->getHeaderFooter();
 //        var_dump( $headerFooter->getEvenHeader() );
 //        var_dump( $headerFooter->getOddHeader() );
 //        var_dump( $headerFooter->getFirstHeader() );
@@ -423,6 +424,7 @@ class Excel {
                                                 bool   $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
 
         switch ( $fileExtension ):
             case 'xls':
@@ -501,6 +503,7 @@ class Excel {
 
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
 
         switch ( $fileExtension ):
             case 'csv':
@@ -548,6 +551,7 @@ class Excel {
 
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
 
         switch ( $fileExtension ):
             case 'csv':
