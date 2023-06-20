@@ -3,7 +3,7 @@
   "description": "A php wrapper around the PhpSpreadsheet library.",
   "type": "library",
   "require": {
-    "phpoffice/phpspreadsheet": "^1.6"
+    "phpoffice/phpspreadsheet": "^1.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.5|^8.0|^9.0",
