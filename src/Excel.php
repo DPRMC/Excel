@@ -546,6 +546,7 @@ class Excel {
     /**
      * @param $path
      * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
     public static function getSheetNames( $path ): array {
 
