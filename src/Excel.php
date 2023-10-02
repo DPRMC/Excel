@@ -322,7 +322,7 @@ class Excel {
                                          bool        $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
-        $fileExtension = strtolower($fileExtension);
+        $fileExtension = strtolower( $fileExtension );
 
         switch ( $fileExtension ):
             case 'xls':
@@ -600,10 +600,17 @@ class Excel {
      * @return array
      * @throws Exception
      */
-    public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
+    public static function splitSheet( string      $path,
+                                       int         $sheetIndex = 0,
+                                       int         $maxLinesPerFile = 100,
+                                       IReadFilter $readFilter = NULL,
+                                                   $nullValue = NULL,
+                                       bool        $calculateFormulas = TRUE,
+                                       bool        $formatData = FALSE,
+                                       bool        $returnCellRef = FALSE ): array {
         $sheetName         = Excel::getSheetName( $path, $sheetIndex );
         $pathsToSplitFiles = [];
-        $sheetAsArray      = self::sheetToArray( $path, $sheetName );
+        $sheetAsArray      = self::sheetToArray( $path, $sheetName, $readFilter, $nullValue, $calculateFormulas, $formatData, $returnCellRef );
         $header            = array_shift( $sheetAsArray );
         $chunks            = array_chunk( $sheetAsArray, $maxLinesPerFile );
         foreach ( $chunks as $i => $chunk ):
