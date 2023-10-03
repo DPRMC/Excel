@@ -2,7 +2,6 @@
 
 namespace DPRMC\Excel;
 
-use Carbon\Carbon;
 use DPRMC\Excel\Exceptions\UnableToInitializeOutputFile;
 use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -318,7 +317,7 @@ class Excel {
                                          IReadFilter $readFilter = NULL,
                                                      $nullValue = NULL,
                                          bool        $calculateFormulas = TRUE,
-                                         bool        $formatData = TRUE,
+                                         bool        $formatData = FALSE,
                                          bool        $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
@@ -328,6 +327,9 @@ class Excel {
             case 'xls':
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
                 break;
+            case 'csv':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                break;
             case 'xlxs':
             default:
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
@@ -336,6 +338,9 @@ class Excel {
         $reader->setLoadSheetsOnly( $sheetName );
 
         // 2023-02-09:mdd
+        // Read data only?
+        // Identifies whether the Reader should only read data values for cells, and ignore any formatting information;
+        // or whether it should read both data and formatting.
         $reader->setReadDataOnly( TRUE );
 
         if ( $readFilter ):
@@ -343,10 +348,13 @@ class Excel {
         endif;
 
         $spreadsheet = $reader->load( $path );
-        return $spreadsheet->setActiveSheetIndexByName( $sheetName )->toArray( $nullValue,
-                                                                               $calculateFormulas,
-                                                                               $formatData,
-                                                                               $returnCellRef );
+        //$spreadsheet->getDefaultStyle()->getNumberFormat()->setFormatCode(DataType::TYPE_STRING2);
+
+        return $spreadsheet->setActiveSheetIndexByName( $sheetName )
+                           ->toArray( $nullValue,
+                                      $calculateFormulas,
+                                      $formatData,
+                                      $returnCellRef );
     }
 
 
@@ -384,18 +392,7 @@ class Excel {
 //        endif;
         $spreadsheet  = $reader->load( $path );
         $headerFooter = $spreadsheet->setActiveSheetIndexByName( $sheetName )->getHeaderFooter();
-//        var_dump( $headerFooter->getEvenHeader() );
-//        var_dump( $headerFooter->getOddHeader() );
-//        var_dump( $headerFooter->getFirstHeader() );
-//        var_dump( $headerFooter->getDifferentFirst() );
-//        var_dump( $headerFooter->getImages() );
-//        var_dump( $headerFooter->getScaleWithDocument() );
-//        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getCreated(), 'America/New_York')->toDateString() );
-//        var_dump( Carbon::createFromTimestamp($spreadsheet->getProperties()->getModified(), 'America/New_York')->toDateString() );
-//
-//        dump($spreadsheet->getProperties()->getSubject());
-//        dump($spreadsheet->getProperties()->getCategory());
-//        dump($spreadsheet->getProperties()->getDescription());
+
 
 
 //        $spreadsheet->setActiveSheetIndexByName( $sheetName )->
@@ -499,7 +496,7 @@ class Excel {
      * @param int $sheetIndex
      * @return string
      */
-    public static function getSheetName( $path, $sheetIndex = 0 ): string {
+    public static function getSheetName( $path, int $sheetIndex = 0 ): string {
 
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
@@ -597,8 +594,17 @@ class Excel {
      * @param string $path
      * @param int $sheetIndex
      * @param int $maxLinesPerFile
+     * @param IReadFilter|NULL $readFilter
+     * @param $nullValue
+     * @param bool $calculateFormulas
+     * @param bool $formatData
+     * @param bool $returnCellRef
+     * @param string|NULL $tempDirectory
+     * @param array $columnsThatShouldBeNumbers
+     * @param array $columnsWithCustomNumberFormats
      * @return array
-     * @throws Exception
+     * @throws UnableToInitializeOutputFile
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public static function splitSheet( string      $path,
                                        int         $sheetIndex = 0,
@@ -607,15 +613,30 @@ class Excel {
                                                    $nullValue = NULL,
                                        bool        $calculateFormulas = TRUE,
                                        bool        $formatData = FALSE,
-                                       bool        $returnCellRef = FALSE ): array {
+                                       bool        $returnCellRef = FALSE,
+                                       string      $tempDirectory = NULL,
+                                       array       $columnsThatShouldBeNumbers = [],
+                                       array       $columnsWithCustomNumberFormats = [] ): array {
         $sheetName         = Excel::getSheetName( $path, $sheetIndex );
         $pathsToSplitFiles = [];
-        $sheetAsArray      = self::sheetToArray( $path, $sheetName, $readFilter, $nullValue, $calculateFormulas, $formatData, $returnCellRef );
+        $sheetAsArray      = self::sheetToArray( $path,
+                                                 $sheetName,
+                                                 $readFilter,
+                                                 $nullValue,
+                                                 $calculateFormulas,
+                                                 $formatData,
+                                                 $returnCellRef );
         $header            = array_shift( $sheetAsArray );
         $chunks            = array_chunk( $sheetAsArray, $maxLinesPerFile );
         foreach ( $chunks as $i => $chunk ):
             $chunk               = self::setHeadersAsIndexes( $chunk, $header );
-            $pathsToSplitFiles[] = self::simple( $chunk, [], $sheetName, tempnam( NULL, 'split_' . $i ), [] );
+            $pathsToSplitFiles[] = self::simple( $chunk,
+                                                 [],
+                                                 $sheetName,
+                                                 tempnam( $tempDirectory, 'split_' . $i ),
+                                                 [],
+                                                 $columnsThatShouldBeNumbers,
+                                                 $columnsWithCustomNumberFormats );
         endforeach;
         return $pathsToSplitFiles;
     }
@@ -1072,5 +1093,17 @@ class Excel {
         endif;
     }
 
+
+
+    public static function decimalNotation($num){
+        $parts = explode('E', $num);
+        if(count($parts) != 2){
+            return $num;
+        }
+        $exp = abs(end($parts)) + 3;
+        $decimal = number_format($num, $exp);
+        $decimal = rtrim($decimal, '0');
+        return rtrim($decimal, '.');
+    }
 
 }
