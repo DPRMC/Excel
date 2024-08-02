@@ -15,6 +15,7 @@ use Exception;
 
 /**
  * Class Excel
+ *
  * @package DPRMC
  */
 class Excel {
@@ -89,16 +90,17 @@ class Excel {
 
 
     /**
-     * @param array $rows
-     * @param array $totals
+     * @param array  $rows
+     * @param array  $totals
      * @param string $sheetName
      * @param string $path
-     * @param array $options
-     * @param array $columnDataTypes
-     * @param array $columnsWithCustomNumberFormats
-     * @param array $styles
-     * @param array $columnsWithCustomWidths
-     * @param bool $freezeHeader
+     * @param array  $options
+     * @param array  $columnDataTypes
+     * @param array  $columnsWithCustomNumberFormats
+     * @param array  $styles
+     * @param array  $columnsWithCustomWidths
+     * @param bool   $freezeHeader
+     *
      * @return string
      * @throws UnableToInitializeOutputFile
      */
@@ -147,7 +149,7 @@ class Excel {
 
 
     /**
-     * @param $spreadsheet
+     * @param       $spreadsheet
      * @param array $rows
      * @param array $styles
      */
@@ -181,7 +183,7 @@ class Excel {
                         foreach ( $rows as $i => $row ) :
                             $excel_column = self::getExcelColumnFromIndex( $cell_index );
                             // Apply to all rows excluding header
-                            $excel_address = $excel_column . ( $i + 2 );
+                            $excel_address = $excel_column . ($i + 2);
                             $spreadsheet->setActiveSheetIndex( 0 )
                                         ->getStyle( $excel_address )
                                         ->applyFromArray( $styleArray );
@@ -214,6 +216,7 @@ class Excel {
 
     /**
      * @param string $cellAddress
+     *
      * @return string
      * @throws Exception
      */
@@ -237,7 +240,8 @@ class Excel {
 
     /**
      * @param string $headerLabel
-     * @param array $rows
+     * @param array  $rows
+     *
      * @return string Ex: D1, Z1, EE1, etc
      * @throws Exception
      */
@@ -262,13 +266,15 @@ class Excel {
 
     /**
      * A wrapper around the PhpSpreadsheet library to make consistently formatted spreadsheets.
-     * @param array $rows
-     * @param array $totals
+     *
+     * @param array  $rows
+     * @param array  $totals
      * @param string $sheetName
      * @param string $path
-     * @param array $options
-     * @param array $columnsThatShouldBeNumbers
-     * @param array $columnsWithCustomNumberFormats
+     * @param array  $options
+     * @param array  $columnsThatShouldBeNumbers
+     * @param array  $columnsWithCustomNumberFormats
+     *
      * @return string
      * @throws UnableToInitializeOutputFile
      */
@@ -302,13 +308,14 @@ class Excel {
 
 
     /**
-     * @param string $path
-     * @param null $sheetName This should be a string containing a single worksheet name.
+     * @param string           $path
+     * @param null             $sheetName  This should be a string containing a single worksheet name.
      * @param IReadFilter|null $readFilter Only want specific columns, use this parameter.
-     * @param null $nullValue
-     * @param bool $calculateFormulas
-     * @param bool $formatData Set to false if you want total precision of numbers, and not formatted.
-     * @param bool $returnCellRef
+     * @param null             $nullValue
+     * @param bool             $calculateFormulas
+     * @param bool             $formatData Set to false if you want total precision of numbers, and not formatted.
+     * @param bool             $returnCellRef
+     *
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
@@ -360,8 +367,10 @@ class Excel {
 
     /**
      * Work in progress...
+     *
      * @param string $path
-     * @param $sheetName
+     * @param        $sheetName
+     *
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
@@ -394,7 +403,6 @@ class Excel {
         $headerFooter = $spreadsheet->setActiveSheetIndexByName( $sheetName )->getHeaderFooter();
 
 
-
 //        $spreadsheet->setActiveSheetIndexByName( $sheetName )->
 
 //        dump($sheetName);
@@ -404,13 +412,14 @@ class Excel {
 
 
     /**
-     * @param string $path
-     * @param int|null $index This should be the index of the sheet.
+     * @param string           $path
+     * @param int|null         $index      This should be the index of the sheet.
      * @param IReadFilter|null $readFilter // Only want specific columns, use this parameter.
-     * @param null $nullValue
-     * @param bool $calculateFormulas
-     * @param bool $formatData // Set to false if you want total precision of numbers, and not formatted.
-     * @param bool $returnCellRef
+     * @param null             $nullValue
+     * @param bool             $calculateFormulas
+     * @param bool             $formatData // Set to false if you want total precision of numbers, and not formatted.
+     * @param bool             $returnCellRef
+     *
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
@@ -450,7 +459,9 @@ class Excel {
 
     /**
      * Given a zero based index from a php array, this method will return the Excel column equivalent.
+     *
      * @param $index
+     *
      * @return string
      */
     public static function getExcelColumnFromIndex( $index ) {
@@ -467,6 +478,7 @@ class Excel {
 
     /**
      * @param string $excelColumnLetters XFD
+     *
      * @return int 16383
      */
     public static function getPhpArrayIndexFromExcelColumn( string $excelColumnLetters ): int {
@@ -492,8 +504,9 @@ class Excel {
 
 
     /**
-     * @param $path
+     * @param     $path
      * @param int $sheetIndex
+     *
      * @return string
      */
     public static function getSheetName( $path, int $sheetIndex = 0 ): string {
@@ -523,8 +536,10 @@ class Excel {
     /**
      * Some other methods here require the sheet index, instead of the name.
      * Why not have a little helper to get that for you.
-     * @param string $path The absolute path to the spreadsheet file.
+     *
+     * @param string $path      The absolute path to the spreadsheet file.
      * @param string $sheetName The sheet (tab) name that you want the index of.
+     *
      * @return int The numeric index of the sheet in question.
      * @throws Exception Thrown if unable to locate a sheet with $sheetName
      */
@@ -542,6 +557,7 @@ class Excel {
 
     /**
      * @param $path
+     *
      * @return array
      * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
      */
@@ -570,8 +586,10 @@ class Excel {
 
     /**
      * Returns the number of lines in the sheet.
-     * @param $path
+     *
+     * @param     $path
      * @param int $sheetIndex
+     *
      * @return int
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
@@ -591,17 +609,18 @@ class Excel {
 
 
     /**
-     * @param string $path
-     * @param int $sheetIndex
-     * @param int $maxLinesPerFile
+     * @param string           $path
+     * @param int              $sheetIndex
+     * @param int              $maxLinesPerFile
      * @param IReadFilter|NULL $readFilter
-     * @param $nullValue
-     * @param bool $calculateFormulas
-     * @param bool $formatData
-     * @param bool $returnCellRef
-     * @param string|NULL $tempDirectory
-     * @param array $columnsThatShouldBeNumbers
-     * @param array $columnsWithCustomNumberFormats
+     * @param                  $nullValue
+     * @param bool             $calculateFormulas
+     * @param bool             $formatData
+     * @param bool             $returnCellRef
+     * @param string|NULL      $tempDirectory
+     * @param array            $columnsThatShouldBeNumbers
+     * @param array            $columnsWithCustomNumberFormats
+     *
      * @return array
      * @throws UnableToInitializeOutputFile
      * @throws \PhpOffice\PhpSpreadsheet\Exception
@@ -633,7 +652,7 @@ class Excel {
             $pathsToSplitFiles[] = self::simple( $chunk,
                                                  [],
                                                  $sheetName,
-                                                 tempnam( $tempDirectory, 'split_' . $i ),
+                                                 tempnam( $tempDirectory ?? sys_get_temp_dir(), 'split_' . $i ),
                                                  [],
                                                  $columnsThatShouldBeNumbers,
                                                  $columnsWithCustomNumberFormats );
@@ -644,6 +663,7 @@ class Excel {
     /**
      * @param array $rows
      * @param array $headers
+     *
      * @return array
      */
     protected static function setHeadersAsIndexes( array $rows, array $headers ): array {
@@ -729,7 +749,7 @@ class Excel {
 
 
     /**
-     * @param $spreadsheet
+     * @param       $spreadsheet
      * @param array $rows
      */
     protected static function setHeaderRow( &$spreadsheet, $rows = [], $columnsWithCustomWidths = [] ) {
@@ -802,6 +822,7 @@ class Excel {
     /**
      *
      * @param string $startChar
+     *
      * @return bool
      */
     protected static function shouldBeNumeric( string $startChar ): bool {
@@ -813,6 +834,7 @@ class Excel {
 
     /**
      * @param string $startChar
+     *
      * @return bool
      */
     protected static function hasCustomNumberFormat( string $startChar ) {
@@ -825,6 +847,7 @@ class Excel {
     /**
      *
      * @param string $startChar
+     *
      * @return bool
      */
     protected static function shouldBeFormulaic( string $startChar ): bool {
@@ -836,7 +859,7 @@ class Excel {
 
     /**
      * @param Spreadsheet $spreadsheet
-     * @param array $totals
+     * @param array       $totals
      *
      * @throws Exception
      */
@@ -911,8 +934,9 @@ class Excel {
     }
 
     /**
-     * @param $spreadsheet
+     * @param        $spreadsheet
      * @param string $worksheetName
+     *
      * @throws Exception
      */
     protected static function setWorksheetTitle( &$spreadsheet, $worksheetName = 'worksheet' ) {
@@ -930,8 +954,10 @@ class Excel {
 
     /**
      * Send an array of column columns that should be treated as numeric
+     *
      * @param array $columnsThatShouldBeNumbers
      * @param array $rows
+     *
      * @throws Exception
      */
     protected static function setColumnsThatShouldBeNumbers( array $columnsThatShouldBeNumbers, array $rows ) {
@@ -960,6 +986,7 @@ class Excel {
     /**
      * @param array $columnsWithCustomNumberFormats
      * @param array $rows
+     *
      * @throws Exception
      */
     protected static function setColumnsWithCustomNumberFormats( array $columnsWithCustomNumberFormats, array $rows ) {
@@ -988,8 +1015,10 @@ class Excel {
 
     /**
      * Send an array of column columns that should be treated as formulas
+     *
      * @param array $columnsThatShouldBeFormulas
      * @param array $rows
+     *
      * @throws Exception
      */
     protected static function setColumnsThatShouldBeFormulas( array $columnsThatShouldBeFormulas, array $rows ) {
@@ -1019,6 +1048,7 @@ class Excel {
     /**
      * @param $spreadsheet
      * @param $path
+     *
      * @throws Exception
      */
     protected static function writeSpreadsheet( $spreadsheet, $path ) {
@@ -1031,11 +1061,11 @@ class Excel {
     }
 
     /**
-     * @param $spreadsheet
-     * @param $cellCoordinate
-     * @param $value
+     * @param        $spreadsheet
+     * @param        $cellCoordinate
+     * @param        $value
      * @param string $customNumberFormat
-     * @param int $activeSheetIndex
+     * @param int    $activeSheetIndex
      */
     protected static function setNumericCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
@@ -1051,10 +1081,10 @@ class Excel {
 
     /**
      * @param Spreadsheet $spreadsheet
-     * @param $cellCoordinate
-     * @param $value
-     * @param string $customNumberFormat
-     * @param int $activeSheetIndex
+     * @param             $cellCoordinate
+     * @param             $value
+     * @param string      $customNumberFormat
+     * @param int         $activeSheetIndex
      */
     protected static function setFormulaicCell( Spreadsheet &$spreadsheet,
                                                             $cellCoordinate,
@@ -1073,9 +1103,9 @@ class Excel {
     }
 
     /**
-     * @param $spreadsheet
-     * @param $cellCoordinate
-     * @param $value
+     * @param     $spreadsheet
+     * @param     $cellCoordinate
+     * @param     $value
      * @param int $activeSheetIndex
      */
     protected static function setTextCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
@@ -1094,16 +1124,15 @@ class Excel {
     }
 
 
-
-    public static function decimalNotation($num){
-        $parts = explode('E', $num);
-        if(count($parts) != 2){
+    public static function decimalNotation( $num ) {
+        $parts = explode( 'E', $num );
+        if ( count( $parts ) != 2 ) {
             return $num;
         }
-        $exp = abs(end($parts)) + 3;
-        $decimal = number_format($num, $exp);
-        $decimal = rtrim($decimal, '0');
-        return rtrim($decimal, '.');
+        $exp     = abs( end( $parts ) ) + 3;
+        $decimal = number_format( $num, $exp );
+        $decimal = rtrim( $decimal, '0' );
+        return rtrim( $decimal, '.' );
     }
 
 }
