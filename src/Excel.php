@@ -508,7 +508,7 @@ class Excel {
      */
     protected static function initializeFile( $path ) {
 
-        $bytes_written = file_put_contents( $path, '' );
+        $bytes_written = @file_put_contents( $path, '' );
         if ( FALSE === $bytes_written ):
             throw new UnableToInitializeOutputFile( "Unable to write to the file at " . $path );
         endif;
@@ -863,8 +863,8 @@ class Excel {
      * @param string $customNumberFormat
      * @param int $activeSheetIndex
      */
-    protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
-        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->setCellValue( $cellCoordinate, $value, DataType::TYPE_FORMULA );
+    protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, string $customNumberFormat = '', int $activeSheetIndex = 0 ) {
+        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_FORMULA );
         if ( $customNumberFormat ) :
             $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
         endif;
