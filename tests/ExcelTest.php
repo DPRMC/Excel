@@ -232,14 +232,14 @@ class ExcelTest extends TestCase {
      * @group meta
      */
     public function getDescriptionShouldReturnMetaDescription() {
-        $sheetName  = 'metaDescription';
-        $options    = [ 'description' => 'Meta Description' ];
+        $sheetName = 'metaDescription';
+        $options = ['description' => 'Meta Description'];
         $pathToFile = Excel::advanced( [], [], $sheetName, $this->pathToOutputFile, $options );
-        $reader     = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $reader->setLoadSheetsOnly( $sheetName );
-        $spreadsheet              = $reader->load( $pathToFile );
+        $spreadsheet = $reader->load( $pathToFile );
         $retrievedMetaDescription = $spreadsheet->getProperties()->getDescription();
-        $this->assertEquals( $options[ 'description' ], $retrievedMetaDescription );
+        $this->assertEquals( $options['description'], $retrievedMetaDescription );
     }
 
 
@@ -253,28 +253,28 @@ class ExcelTest extends TestCase {
             'DATE'   => '2018-01-01',
             'ACTION' => 'BUY',
             'PRICE'  => '123.456',
-            'FORMAT' => '123.456',
+            'FORMAT' => '123.456'
         ];
         $rows[]    = [
             'CUSIP'  => 'ABC123789',
             'DATE'   => '2019-01-01',
             'ACTION' => 'BUY',
             'PRICE'  => '998.342',
-            'FORMAT' => '998.342',
+            'FORMAT' => '998.342'
         ];
         $totals    = [
             'CUSIP'  => '1',
             'DATE'   => '2',
             'ACTION' => '3',
             'PRICE'  => '987.654',
-            'FORMAT' => '987.654',
+            'FORMAT' => '987.654'
         ];
         $options   = [];
         $sheetName = 'num1';
 
         $numberTypeColumns = [
             'PRICE',
-            'FORMAT',
+            'FORMAT'
         ];
 
         $numberTypeColumnsWithCustomNumericFormats = [
@@ -282,10 +282,9 @@ class ExcelTest extends TestCase {
             'FORMAT' => Excel::FORMAT_NUMERIC,
         ];
 
-        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns, $numberTypeColumnsWithCustomNumericFormats );
+        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns,$numberTypeColumnsWithCustomNumericFormats  );
         $sheetAsArray = Excel::sheetToArray( $pathToFile, $sheetName );
-
-        $this->assertTrue( gettype( (float)$sheetAsArray[ 1 ][ 3 ] ) === 'double' );
+        $this->assertTrue( gettype( $sheetAsArray[ 1 ][ 3 ] ) === 'double' );
     }
 
 
@@ -300,7 +299,7 @@ class ExcelTest extends TestCase {
             'ACTION'    => 'BUY',
             'PRICE'     => '123.456',
             'NEW PRICE' => '150',
-            'FORM'      => '=IFERROR(((E2-D2)/D2),"")',
+            'FORM'      => '=IFERROR(((E2-D2)/D2),"")'
 
 
         ];
@@ -310,7 +309,7 @@ class ExcelTest extends TestCase {
             'ACTION'    => 'BUY',
             'PRICE'     => '998.342',
             'NEW PRICE' => "1000.05",
-            'FORM'      => '=IFERROR(((E3-D3)/D3),"")',
+            'FORM'      => '=IFERROR(((E3-D3)/D3),"")'
         ];
         $totals = [
             'CUSIP'     => '1',
@@ -318,7 +317,7 @@ class ExcelTest extends TestCase {
             'ACTION'    => '3',
             'PRICE'     => '1121.798',
             'NEW PRICE' => '1150.05',
-            'FORM'      => '=IFERROR(((E4-D4)/D4),"")',
+            'FORM'      => '=IFERROR(((E4-D4)/D4),"")'
         ];
 
 
@@ -393,15 +392,15 @@ class ExcelTest extends TestCase {
             ];
 
 
-        $sheetName           = 'advanced';
-        $options             = [];
-        $columnDataTypes     = [
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [
             'CUSIP'     => DataType::TYPE_STRING,
             'PRICE'     => DataType::TYPE_NUMERIC,
             'NEW PRICE' => DataType::TYPE_NUMERIC,
-            'FORM'      => DataType::TYPE_FORMULA,
+            'FORM'      => DataType::TYPE_FORMULA
         ];
-        $styles              = [
+        $styles          = [
             'CUSIP'   => $testStyle1,
             'ACTION'  => $testStyle2,
             'CUSIP:*' => $testStyle3,
@@ -410,16 +409,16 @@ class ExcelTest extends TestCase {
         $customNumberFormats = [
             'PRICE'     => Excel::FORMAT_NUMERIC,
             'NEW PRICE' => Excel::FORMAT_NUMERIC,
-            'FORM'      => Excel::FORMAT_NUMERIC,
+            'FORM'      => Excel::FORMAT_NUMERIC
         ];
 
-        $freezeHeader = TRUE;
+        $freezeHeader = true;
 
 
         $columnsWithCustomWidths = [
-            'PRICE'     => 25,
+            'PRICE' => 25,
             'NEW PRICE' => 50,
-            'FORM'      => 100,
+            'FORM' => 100
         ];
 
         $pathToFile = Excel::advanced( $rows,
@@ -431,7 +430,7 @@ class ExcelTest extends TestCase {
                                        $customNumberFormats,
                                        $columnsWithCustomWidths,
                                        $styles,
-                                       $freezeHeader );
+                                       $freezeHeader);
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $reader->setLoadSheetsOnly( $sheetName );
@@ -454,7 +453,7 @@ class ExcelTest extends TestCase {
             'ACTION'    => 'BUY',
             'PRICE'     => '75',
             'NEW PRICE' => '150',
-            'FORM'      => '=IFERROR(((E2-D2)/D2),"")',
+            'FORM'      => '=IFERROR(((E2-D2)/D2),"")'
 
 
         ];
@@ -464,7 +463,7 @@ class ExcelTest extends TestCase {
             'ACTION'    => 'BUY',
             'PRICE'     => '200',
             'NEW PRICE' => "150",
-            'FORM'      => '=IFERROR(((E3-D3)/D3),"")',
+            'FORM'      => '=IFERROR(((E3-D3)/D3),"")'
         ];
         $totals = [
             'CUSIP'     => '1',
@@ -472,7 +471,7 @@ class ExcelTest extends TestCase {
             'ACTION'    => '3',
             'PRICE'     => '275',
             'NEW PRICE' => '300',
-            'FORM'      => '=IFERROR(((E4-D4)/D4),"")',
+            'FORM'      => '=IFERROR(((E4-D4)/D4),"")'
         ];
 
         $sheetName       = 'advanced';
@@ -481,31 +480,32 @@ class ExcelTest extends TestCase {
             'CUSIP'     => DataType::TYPE_STRING,
             'PRICE'     => DataType::TYPE_NUMERIC,
             'NEW PRICE' => DataType::TYPE_NUMERIC,
-            'FORM'      => DataType::TYPE_FORMULA,
+            'FORM'      => DataType::TYPE_FORMULA
         ];
 
         $customNumberFormats = [
             'PRICE'     => Excel::FORMAT_NUMERIC,
             'NEW PRICE' => Excel::FORMAT_NUMERIC,
-            'FORM'      => Excel::FORMAT_NUMERIC,
+            'FORM'      => Excel::FORMAT_NUMERIC
         ];
 
 
+
         $pathToFile = Excel::advanced( $rows,
-                                       $totals,
-                                       $sheetName,
-                                       $this->pathToOutputFile,
-                                       $options,
-                                       $columnDataTypes,
-                                       $customNumberFormats );
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $reader->setLoadSheetsOnly( $sheetName );
 
 
         $spreadsheet = $reader->load( $pathToFile );
-        $value       = $spreadsheet->getActiveSheet()->getCell( 'F3' )->getCalculatedValue();
-        $this->assertTrue( $value === -.25 );
+        $value = $spreadsheet->getActiveSheet()->getCell('F3')->getCalculatedValue();
+        $this->assertTrue(  $value === -.25 );
 
     }
 
@@ -513,61 +513,63 @@ class ExcelTest extends TestCase {
      * @test
      * @group text
      */
-    public function dataTypeStringShouldAcceptNumberFormats() {
-        $rows[]              = [
-            'CUSIP' => '123456789',
+    public function dataTypeStringShouldAcceptNumberFormats()
+    {
+        $rows[] = [
+            'CUSIP'     => '123456789',
         ];
-        $totals              = [];
-        $sheetName           = 'advanced';
-        $options             = [];
-        $columnDataTypes     = [
-            'CUSIP' => DataType::TYPE_STRING,
+        $totals = [];
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [
+            'CUSIP'     => DataType::TYPE_STRING
         ];
         $customNumberFormats = [
-            'CUSIP' => NumberFormat::FORMAT_GENERAL,
+            'CUSIP'     => NumberFormat::FORMAT_GENERAL
         ];
-        $pathToFile          = Excel::advanced( $rows,
-                                                $totals,
-                                                $sheetName,
-                                                $this->pathToOutputFile,
-                                                $options,
-                                                $columnDataTypes,
-                                                $customNumberFormats );
+        $pathToFile = Excel::advanced( $rows,
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $reader->setLoadSheetsOnly( $sheetName );
 
 
-        $spreadsheet  = $reader->load( $pathToFile );
-        $numberFormat = $spreadsheet->getActiveSheet()->getStyle( 'A2' )->getNumberFormat();
-        $formatCode   = $numberFormat->getFormatCode();
-        $this->assertTrue( $formatCode === 'General' );
+        $spreadsheet = $reader->load( $pathToFile );
+        $numberFormat = $spreadsheet->getActiveSheet()->getStyle('A2')->getNumberFormat();
+        $formatCode = $numberFormat->getFormatCode();
+        $this->assertTrue(  $formatCode === 'General' );
     }
 
     /**
      * @test
      * @group exception
      */
-    public function invalidFormulaColumnNameShouldThrowException() {
+    public function invalidFormulaColumnNameShouldThrowException()
+    {
         $this->expectException( Exception::class );
-        $rows[]              = [
-            'CUSIP' => '123456789',
+        $rows[] = [
+            'CUSIP'     => '123456789',
         ];
-        $totals              = [];
-        $sheetName           = 'advanced';
-        $options             = [];
-        $columnDataTypes     = [
-            'InvalidName' => DataType::TYPE_FORMULA,
+        $totals = [];
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [
+            'InvalidName'     => DataType::TYPE_FORMULA
         ];
         $customNumberFormats = [];
 
         $pathToFile = Excel::advanced( $rows,
-                                       $totals,
-                                       $sheetName,
-                                       $this->pathToOutputFile,
-                                       $options,
-                                       $columnDataTypes,
-                                       $customNumberFormats );
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
 
 
     }
@@ -576,26 +578,27 @@ class ExcelTest extends TestCase {
      * @test
      * @group exception
      */
-    public function invalidNumericColumnNameShouldThrowException() {
+    public function invalidNumericColumnNameShouldThrowException()
+    {
         $this->expectException( Exception::class );
-        $rows[]              = [
-            'CUSIP' => '123456789',
+        $rows[] = [
+            'CUSIP'     => '123456789',
         ];
-        $totals              = [];
-        $sheetName           = 'advanced';
-        $options             = [];
-        $columnDataTypes     = [];
+        $totals = [];
+        $sheetName       = 'advanced';
+        $options         = [];
+        $columnDataTypes = [];
         $customNumberFormats = [
-            'InvalidName' => NumberFormat::FORMAT_GENERAL,
+            'InvalidName'     => NumberFormat::FORMAT_GENERAL
         ];
 
         $pathToFile = Excel::advanced( $rows,
-                                       $totals,
-                                       $sheetName,
-                                       $this->pathToOutputFile,
-                                       $options,
-                                       $columnDataTypes,
-                                       $customNumberFormats );
+            $totals,
+            $sheetName,
+            $this->pathToOutputFile,
+            $options,
+            $columnDataTypes,
+            $customNumberFormats);
 
 
     }
@@ -607,19 +610,19 @@ class ExcelTest extends TestCase {
     public function invalidNumberTypeColumnNameShouldThrowException() {
         $this->expectException( Exception::class );
         $rows[]    = [
-            'CUSIP' => '123456789',
+            'CUSIP'  => '123456789'
         ];
         $totals    = [];
         $options   = [];
         $sheetName = 'num1';
 
         $numberTypeColumns = [
-            'InvalidNumberColumnName',
+            'InvalidNumberColumnName'
         ];
 
         $numberTypeColumnsWithCustomNumericFormats = [];
 
-        $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns, $numberTypeColumnsWithCustomNumericFormats );
+        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns,$numberTypeColumnsWithCustomNumericFormats  );
 
     }
 
@@ -630,7 +633,7 @@ class ExcelTest extends TestCase {
     public function blankSheetNameShouldThrowException() {
         $this->expectException( Exception::class );
         $rows[]    = [
-            'CUSIP' => '123456789',
+            'CUSIP'  => '123456789'
         ];
         $totals    = [];
         $options   = [];
@@ -640,7 +643,83 @@ class ExcelTest extends TestCase {
 
         $numberTypeColumnsWithCustomNumericFormats = [];
 
-        $pathToFile = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns, $numberTypeColumnsWithCustomNumericFormats );
+        $pathToFile   = Excel::simple( $rows, $totals, $sheetName, $this->pathToOutputFile, $options, $numberTypeColumns,$numberTypeColumnsWithCustomNumericFormats  );
 
+    }
+
+    /**
+     * @test
+     * @group ord
+     */
+    public function shouldReturnPhpArrayIndexFromExcelColumnLetters() {
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'a' );
+        $this->assertEquals( 0, $arrayIndex );
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'Z' );
+        $this->assertEquals( 25, $arrayIndex );
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'AA' );
+        $this->assertEquals( 26, $arrayIndex );
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'GX' );
+        $this->assertEquals( 205, $arrayIndex );
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'AAA' );
+        $this->assertEquals( 702, $arrayIndex );
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'AAB' );
+        $this->assertEquals( 703, $arrayIndex );
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'AAZ' );
+        $this->assertEquals( 727, $arrayIndex );
+
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'BAA' );
+        $this->assertEquals( 1378, $arrayIndex );
+
+        // The biggest column in Excel is XFD
+        $arrayIndex = Excel::getPhpArrayIndexFromExcelColumn( 'XFD' );
+        $this->assertEquals( 16383, $arrayIndex );
+    }
+
+
+    /**
+     * @test
+     * @group split_small
+     */
+    public function shouldSplitFileWithoutFormattingSmallNumbers() {
+        $sourceSheetPath = './tests/test_files/test_split.xlsx';
+        $filePaths       = Excel::splitSheet( $sourceSheetPath,
+                                              0,
+                                              2,
+                                              NULL,
+                                              NULL,
+                                              TRUE,
+                                              FALSE,
+                                              FALSE,
+                                              './tests/test_files/output/',
+                                              [ 'price' ] );
+
+        foreach ( $filePaths as $filePath ):
+            $parts               = pathinfo( $filePath );
+            $destinationFilename = './tests/test_files/output/' . $parts[ 'basename' ] . '.xlsx';
+            copy( $filePath, $destinationFilename );
+            unset( $filePath );
+            $array = Excel::sheetToArray( $destinationFilename,
+                                          'Security_Pricing_Update',
+                                          NULL,
+                                          NULL,
+                                          FALSE,
+                                          FALSE,
+                                          FALSE );
+
+            foreach ( $array as $i => $row ):
+                $value = Excel::decimalNotation( $row[ 5 ] );
+
+                if ( is_numeric( $value ) ):
+                    $this->assertEquals('0.00001', $value);
+                endif;
+            endforeach;
+        endforeach;
     }
 }

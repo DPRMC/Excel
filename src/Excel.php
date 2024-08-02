@@ -317,11 +317,62 @@ class Excel {
                                          IReadFilter $readFilter = NULL,
                                                      $nullValue = NULL,
                                          bool        $calculateFormulas = TRUE,
-                                         bool        $formatData = TRUE,
+                                         bool        $formatData = FALSE,
                                          bool        $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
 
+        switch ( $fileExtension ):
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'csv':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+        $reader->setLoadSheetsOnly( $sheetName );
+
+        // 2023-02-09:mdd
+        // Read data only?
+        // Identifies whether the Reader should only read data values for cells, and ignore any formatting information;
+        // or whether it should read both data and formatting.
+        $reader->setReadDataOnly( TRUE );
+
+        if ( $readFilter ):
+            $reader->setReadFilter( $readFilter );
+        endif;
+
+        $spreadsheet = $reader->load( $path );
+        //$spreadsheet->getDefaultStyle()->getNumberFormat()->setFormatCode(DataType::TYPE_STRING2);
+
+        return $spreadsheet->setActiveSheetIndexByName( $sheetName )
+                           ->toArray( $nullValue,
+                                      $calculateFormulas,
+                                      $formatData,
+                                      $returnCellRef );
+    }
+
+
+    /**
+     * Work in progress...
+     * @param string $path
+     * @param $sheetName
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public static function sheetHeaderToArray( string $path, $sheetName = NULL ): array {
+        $headers       = [];
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
+
+        $sheetName = 'LL_Res_LOC';
         switch ( $fileExtension ):
             case 'xls':
                 $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
@@ -333,18 +384,23 @@ class Excel {
         endswitch;
         $reader->setLoadSheetsOnly( $sheetName );
 
-        if ( $readFilter ):
-            $reader->setReadFilter( $readFilter );
-        endif;
+        // 2023-02-09:mdd
+        $reader->setReadDataOnly( TRUE );
 
-        $spreadsheet = $reader->load( $path );
-        return $spreadsheet->setActiveSheetIndexByName( $sheetName )->toArray( $nullValue,
-                                                                               $calculateFormulas,
-                                                                               $formatData,
-                                                                               $returnCellRef );
+//        if ( $readFilter ):
+//            $reader->setReadFilter( $readFilter );
+//        endif;
+        $spreadsheet  = $reader->load( $path );
+        $headerFooter = $spreadsheet->setActiveSheetIndexByName( $sheetName )->getHeaderFooter();
+
+
+
+//        $spreadsheet->setActiveSheetIndexByName( $sheetName )->
+
+//        dump($sheetName);
+//        dd('done');
+        return $headers;
     }
-
-
 
 
     /**
@@ -365,6 +421,7 @@ class Excel {
                                                 bool   $returnCellRef = FALSE ): array {
         $path_parts    = pathinfo( $path );
         $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
 
         switch ( $fileExtension ):
             case 'xls':
@@ -384,10 +441,10 @@ class Excel {
 
         $spreadsheet = $reader->load( $path );
 
-        return $spreadsheet->setActiveSheetIndex( $index )->toArray($nullValue,
-                                                                    $calculateFormulas,
-                                                                    $formatData,
-                                                                    $returnCellRef );
+        return $spreadsheet->setActiveSheetIndex( $index )->toArray( $nullValue,
+                                                                     $calculateFormulas,
+                                                                     $formatData,
+                                                                     $returnCellRef );
     }
 
 
@@ -409,14 +466,105 @@ class Excel {
 
 
     /**
+     * @param string $excelColumnLetters XFD
+     * @return int 16383
+     */
+    public static function getPhpArrayIndexFromExcelColumn( string $excelColumnLetters ): int {
+        $excelColumnLetters = strtoupper( $excelColumnLetters );
+        $array              = str_split( $excelColumnLetters );
+        $placeCounter       = 0;
+
+        // Reverse only the keys in the array.
+        // Leave the letters (values) in the order they were.
+        // The key will serve as the exponent.
+        $array = array_combine( array_reverse( array_keys( $array ) ), $array );
+
+        //
+        foreach ( $array as $count => $letter ):
+            $singleLetterValue = ord( $letter ) - 64;
+            $baseOfPlace       = pow( 26, $count );
+            $valueOfLetter     = $baseOfPlace * $singleLetterValue;
+            $placeCounter      += $valueOfLetter;
+        endforeach;
+        $phpIndex = $placeCounter - 1;
+        return $phpIndex;
+    }
+
+
+    /**
      * @param $path
      * @param int $sheetIndex
      * @return string
      */
-    public static function getSheetName( $path, $sheetIndex = 0 ): string {
-        $reader     = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+    public static function getSheetName( $path, int $sheetIndex = 0 ): string {
+
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
+
+        switch ( $fileExtension ):
+            case 'csv':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                break;
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+
         $sheetNames = $reader->listWorksheetNames( $path );
         return (string)$sheetNames[ $sheetIndex ];
+    }
+
+
+    /**
+     * Some other methods here require the sheet index, instead of the name.
+     * Why not have a little helper to get that for you.
+     * @param string $path The absolute path to the spreadsheet file.
+     * @param string $sheetName The sheet (tab) name that you want the index of.
+     * @return int The numeric index of the sheet in question.
+     * @throws Exception Thrown if unable to locate a sheet with $sheetName
+     */
+    public static function getSheetIndexByName( string $path, string $sheetName ): int {
+        $sheetNames = self::getSheetNames( $path );
+        $index      = array_search( $sheetName, $sheetNames );
+
+        if ( FALSE === $index ):
+            throw new \Exception( "Unable to find sheet named: " . $sheetName );
+        endif;
+
+        return (int)$index;
+    }
+
+
+    /**
+     * @param $path
+     * @return array
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception
+     */
+    public static function getSheetNames( $path ): array {
+
+        $path_parts    = pathinfo( $path );
+        $fileExtension = $path_parts[ 'extension' ];
+        $fileExtension = strtolower( $fileExtension );
+
+        switch ( $fileExtension ):
+            case 'csv':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                break;
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+
+        return $reader->listWorksheetNames( $path );
     }
 
 
@@ -446,18 +594,49 @@ class Excel {
      * @param string $path
      * @param int $sheetIndex
      * @param int $maxLinesPerFile
+     * @param IReadFilter|NULL $readFilter
+     * @param $nullValue
+     * @param bool $calculateFormulas
+     * @param bool $formatData
+     * @param bool $returnCellRef
+     * @param string|NULL $tempDirectory
+     * @param array $columnsThatShouldBeNumbers
+     * @param array $columnsWithCustomNumberFormats
      * @return array
-     * @throws Exception
+     * @throws UnableToInitializeOutputFile
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    public static function splitSheet( string $path, int $sheetIndex = 0, int $maxLinesPerFile = 100 ): array {
+    public static function splitSheet( string      $path,
+                                       int         $sheetIndex = 0,
+                                       int         $maxLinesPerFile = 100,
+                                       IReadFilter $readFilter = NULL,
+                                                   $nullValue = NULL,
+                                       bool        $calculateFormulas = TRUE,
+                                       bool        $formatData = FALSE,
+                                       bool        $returnCellRef = FALSE,
+                                       string      $tempDirectory = NULL,
+                                       array       $columnsThatShouldBeNumbers = [],
+                                       array       $columnsWithCustomNumberFormats = [] ): array {
         $sheetName         = Excel::getSheetName( $path, $sheetIndex );
         $pathsToSplitFiles = [];
-        $sheetAsArray      = self::sheetToArray( $path, $sheetName );
+        $sheetAsArray      = self::sheetToArray( $path,
+                                                 $sheetName,
+                                                 $readFilter,
+                                                 $nullValue,
+                                                 $calculateFormulas,
+                                                 $formatData,
+                                                 $returnCellRef );
         $header            = array_shift( $sheetAsArray );
         $chunks            = array_chunk( $sheetAsArray, $maxLinesPerFile );
         foreach ( $chunks as $i => $chunk ):
             $chunk               = self::setHeadersAsIndexes( $chunk, $header );
-            $pathsToSplitFiles[] = self::simple( $chunk, [], $sheetName, tempnam( NULL, 'split_' . $i ), [] );
+            $pathsToSplitFiles[] = self::simple( $chunk,
+                                                 [],
+                                                 $sheetName,
+                                                 tempnam( $tempDirectory, 'split_' . $i ),
+                                                 [],
+                                                 $columnsThatShouldBeNumbers,
+                                                 $columnsWithCustomNumberFormats );
         endforeach;
         return $pathsToSplitFiles;
     }
@@ -491,7 +670,8 @@ class Excel {
     protected static function getUniqueFilePath( $startingPath = '' ) {
         if ( file_exists( $startingPath ) ) {
             $filename_ext = pathinfo( $startingPath, PATHINFO_EXTENSION );
-            $startingPath = preg_replace( '/^(.*)\.' . $filename_ext . '$/', '$1_' . date( 'YmdHis' ) . '.' . $filename_ext, $startingPath );
+            $startingPath =
+                preg_replace( '/^(.*)\.' . $filename_ext . '$/', '$1_' . date( 'YmdHis' ) . '.' . $filename_ext, $startingPath );
 
             if ( is_null( $startingPath ) ) {
                 throw new Exception( "The php function preg_replace (called in Excel::getUniqueFilePath()) returned null, indicating an error." );
@@ -572,7 +752,9 @@ class Excel {
                         ->applyFromArray( self::$headerStyleArray );
 
             if ( array_key_exists( $field, $columnsWithCustomWidths ) ) :
-                $spreadsheet->getActiveSheet()->getColumnDimension( $startChar )->setWidth( $columnsWithCustomWidths[ $field ] );
+                $spreadsheet->getActiveSheet()
+                            ->getColumnDimension( $startChar )
+                            ->setWidth( $columnsWithCustomWidths[ $field ] );
             else :
                 $spreadsheet->setActiveSheetIndex( 0 )->getColumnDimension( $startChar )->setAutoSize( TRUE );
             endif;
@@ -599,12 +781,15 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[ $startChar ] : self::FORMAT_NUMERIC );
+                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                        self::$columnsWithCustomNumberFormats[ $startChar ] : self::FORMAT_NUMERIC );
 
                 elseif ( self::shouldBeFormulaic( $startChar ) ):
-                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
+                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                        self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
                 else :
-                    self::setTextCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ? self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
+                    self::setTextCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                        self::$columnsWithCustomNumberFormats[ $startChar ] : '' );
                 endif;
 
 
@@ -692,10 +877,12 @@ class Excel {
                 foreach ( $value as $name => $childValue ):
                     $cell_coordinate = $columnLetter . $multiDimensionalFooterRow;
                     if ( self::shouldBeNumeric( $columnLetter ) ):
-                        self::setNumericCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                        self::setNumericCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
+                            self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
                     elseif ( self::shouldBeFormulaic( $columnLetter ) ):
-                        self::setFormulaicCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                        self::setFormulaicCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
+                            self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
                     else:
                         self::setTextCell( $spreadsheet, $cell_coordinate, $childValue );
@@ -706,10 +893,12 @@ class Excel {
             else:
                 $cell_coordinate = $columnLetter . $footerRowStart;
                 if ( self::shouldBeNumeric( $columnLetter ) ) :
-                    self::setNumericCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                    self::setNumericCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
+                        self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
                 elseif ( self::shouldBeFormulaic( $columnLetter ) ) :
-                    self::setFormulaicCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ? self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
+                    self::setFormulaicCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
+                        self::$columnsWithCustomNumberFormats[ $columnLetter ] : '' );
 
 
                 else:
@@ -850,23 +1039,36 @@ class Excel {
      */
     protected static function setNumericCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
-                    ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL : DataType::TYPE_NUMERIC );
+                    ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL :
+                        DataType::TYPE_NUMERIC );
         if ( $customNumberFormat ) :
-            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+            $spreadsheet->getActiveSheet()
+                        ->getStyle( $cellCoordinate )
+                        ->getNumberFormat()
+                        ->setFormatCode( $customNumberFormat );
         endif;
     }
 
     /**
-     * @param $spreadsheet
+     * @param Spreadsheet $spreadsheet
      * @param $cellCoordinate
      * @param $value
      * @param string $customNumberFormat
      * @param int $activeSheetIndex
      */
-    protected static function setFormulaicCell( &$spreadsheet, $cellCoordinate, $value, string $customNumberFormat = '', int $activeSheetIndex = 0 ) {
-        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_FORMULA );
+    protected static function setFormulaicCell( Spreadsheet &$spreadsheet,
+                                                            $cellCoordinate,
+                                                            $value,
+                                                string      $customNumberFormat = '',
+                                                int         $activeSheetIndex = 0 ) {
+        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
+            // ->setCellValue( $cellCoordinate, $value, DataType::TYPE_FORMULA );
+                    ->setCellValue( $cellCoordinate, $value ); // 2023-03-10:mdd
         if ( $customNumberFormat ) :
-            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+            $spreadsheet->getActiveSheet()
+                        ->getStyle( $cellCoordinate )
+                        ->getNumberFormat()
+                        ->setFormatCode( $customNumberFormat );
         endif;
     }
 
@@ -879,11 +1081,29 @@ class Excel {
     protected static function setTextCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
                     ->setCellValueExplicit( $cellCoordinate, $value, DataType::TYPE_STRING );
-        $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( NumberFormat::FORMAT_TEXT );
+        $spreadsheet->getActiveSheet()
+                    ->getStyle( $cellCoordinate )
+                    ->getNumberFormat()
+                    ->setFormatCode( NumberFormat::FORMAT_TEXT );
         if ( $customNumberFormat ) :
-            $spreadsheet->getActiveSheet()->getStyle( $cellCoordinate )->getNumberFormat()->setFormatCode( $customNumberFormat );
+            $spreadsheet->getActiveSheet()
+                        ->getStyle( $cellCoordinate )
+                        ->getNumberFormat()
+                        ->setFormatCode( $customNumberFormat );
         endif;
     }
 
+
+
+    public static function decimalNotation($num){
+        $parts = explode('E', $num);
+        if(count($parts) != 2){
+            return $num;
+        }
+        $exp = abs(end($parts)) + 3;
+        $decimal = number_format($num, $exp);
+        $decimal = rtrim($decimal, '0');
+        return rtrim($decimal, '.');
+    }
 
 }
