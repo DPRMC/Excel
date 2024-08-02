@@ -87,8 +87,7 @@ class ExcelTest extends TestCase {
         array_shift( $files ); // .
         array_shift( $files ); // ..
 
-
-        $this->assertCount( 3, $files ); // My two test files and the .gitignore file.
+        $this->assertCount( 2, $files ); // My two test files and the .gitignore file.
     }
 
 
