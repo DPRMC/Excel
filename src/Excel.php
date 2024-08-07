@@ -369,8 +369,15 @@ class Excel {
      * This method saves us from having to copy the tmp file to the filesystem for the purpose
      * of adding the extension so the sheetToArray() method knows how to parse it.
      * Example Usage:
+     * <form action="/test-up" method="POST"  enctype="multipart/form-data">
+     * @csrf
+     * <input type="file" name="myfile" />
+     * <input type="submit" value="Submit">
+     * </form>
+     *
      * $array = Excel::uploadToArray($request->file('myfile'));
      * ...where $request is an object of type \Illuminate\Http\Request
+     *
      * @param \Illuminate\Http\UploadedFile                     $uploadedFile
      * @param                                                   $sheetName
      * @param \PhpOffice\PhpSpreadsheet\Reader\IReadFilter|NULL $readFilter
