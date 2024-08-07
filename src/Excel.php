@@ -366,6 +366,70 @@ class Excel {
 
 
     /**
+     * This method saves us from having to copy the tmp file to the filesystem for the purpose
+     * of adding the extension so the sheetToArray() method knows how to parse it.
+     * Example Usage:
+     * $array = Excel::uploadToArray($request->file('myfile'));
+     * ...where $request is an object of type \Illuminate\Http\Request
+     * @param \Illuminate\Http\UploadedFile                     $uploadedFile
+     * @param                                                   $sheetName
+     * @param \PhpOffice\PhpSpreadsheet\Reader\IReadFilter|NULL $readFilter
+     * @param                                                   $nullValue
+     * @param bool                                              $calculateFormulas
+     * @param bool                                              $formatData
+     * @param bool                                              $returnCellRef
+     *
+     * @return array
+     */
+    public static function uploadToArray( \Illuminate\Http\UploadedFile $uploadedFile,
+
+                                                     $sheetName = NULL,
+                                         IReadFilter $readFilter = NULL,
+                                                     $nullValue = NULL,
+                                         bool        $calculateFormulas = TRUE,
+                                         bool        $formatData = FALSE,
+                                         bool        $returnCellRef = FALSE ): array {
+        $path    = $uploadedFile->getRealPath();
+        $fileExtension = $uploadedFile->getClientOriginalExtension();
+        $fileExtension = strtolower( $fileExtension );
+
+        switch ( $fileExtension ):
+            case 'xls':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xls();
+                break;
+            case 'csv':
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+                break;
+            case 'xlxs':
+            default:
+                $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+                break;
+        endswitch;
+        $reader->setLoadSheetsOnly( $sheetName );
+
+        // 2023-02-09:mdd
+        // Read data only?
+        // Identifies whether the Reader should only read data values for cells, and ignore any formatting information;
+        // or whether it should read both data and formatting.
+        $reader->setReadDataOnly( TRUE );
+
+        if ( $readFilter ):
+            $reader->setReadFilter( $readFilter );
+        endif;
+
+        $spreadsheet = $reader->load( $path );
+
+        return $spreadsheet->setActiveSheetIndexByName( $sheetName )
+                           ->toArray( $nullValue,
+                                      $calculateFormulas,
+                                      $formatData,
+                                      $returnCellRef );
+    }
+
+
+
+
+    /**
      * Work in progress...
      *
      * @param string $path
