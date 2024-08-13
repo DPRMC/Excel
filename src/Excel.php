@@ -2,6 +2,7 @@
 
 namespace DPRMC\Excel;
 
+use Carbon\Carbon;
 use DPRMC\Excel\Exceptions\UnableToInitializeOutputFile;
 use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -11,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Shared\Date as SharedDateHelper;
 use Exception;
 
 /**
@@ -1204,6 +1206,24 @@ class Excel {
         $decimal = number_format( $num, $exp );
         $decimal = rtrim( $decimal, '0' );
         return rtrim( $decimal, '.' );
+    }
+
+    /**
+     * @param string|NULL $excelDate
+     * @param string|NULL $timezone Ex: America/Denver
+     *
+     * @return \Carbon\Carbon|null
+     */
+    public static function excelDateToCarbon( string $excelDate = null, string $timezone = null ): ?Carbon {
+        $value = trim( $excelDate );
+        if ( empty( $value ) ):
+            return null;
+        else:
+            $timestamp  = (int)SharedDateHelper::excelToTimestamp( $value );
+            $carbonDate = Carbon::createFromTimestamp( $timestamp, $timezone );
+            return $carbonDate;
+        endif;
+
     }
 
 }
