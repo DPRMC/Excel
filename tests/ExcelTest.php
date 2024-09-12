@@ -51,7 +51,7 @@ class ExcelTest extends TestCase {
         array_shift( $files ); // ..
         foreach ( $files as $file ):
             if ( '.gitignore' != $file ):
-                unlink( $this->pathToOutputDirectory . $file );
+                //unlink( $this->pathToOutputDirectory . $file );
             endif;
         endforeach;
     }
@@ -433,6 +433,212 @@ class ExcelTest extends TestCase {
 
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $reader->setLoadSheetsOnly( $sheetName );
+
+
+        $spreadsheet = $reader->load( $pathToFile );
+        $RGB         = $spreadsheet->getSheet( 0 )->getStyle( 'A1' )->getFill()->getStartColor()->getRGB();
+
+        $this->assertTrue( $RGB === 'A0A0A0' );
+    }
+
+    /**
+     * @test
+     * @group multisheet
+     */
+    public function multiSheetCreatesFileWithMultipleSheets() {
+
+        $rows[] = [
+            'CUSIP'     => '123456789',
+            'DATE'      => '2018-01-01',
+            'ACTION'    => 'BUY',
+            'PRICE'     => '123.456',
+            'NEW PRICE' => '150',
+            'FORM'      => '=IFERROR(((E2-D2)/D2),"")'
+
+
+        ];
+        $rows[] = [
+            'CUSIP'     => 'ABC123789',
+            'DATE'      => '2019-01-01',
+            'ACTION'    => 'BUY',
+            'PRICE'     => '998.342',
+            'NEW PRICE' => "1000.05",
+            'FORM'      => '=IFERROR(((E3-D3)/D3),"")'
+        ];
+
+        $rows2[] = [
+            'CUSIP'     => '123',
+            'DATE'      => '2024-01-01',
+            'ACTION'    => 'SHEET',
+            'PRICE'     => '654.321',
+            'NEW PRICE' => '500',
+            'FORM'      => '=IFERROR(((E2-D2)/D2),"")'
+
+
+        ];
+        $rows2[] = [
+            'CUSIP'     => 'ABC',
+            'DATE'      => '2023-01-01',
+            'ACTION'    => 'BUY',
+            'PRICE'     => '654.987',
+            'NEW PRICE' => "1000.05",
+            'FORM'      => '=IFERROR(((E3-D3)/D3),"")'
+        ];
+
+        $totals2 = [
+            'CUSIP'     => 'XYZ',
+            'DATE'      => '2024-01-01',
+            'ACTION'    => '45',
+            'PRICE'     => '1111.111',
+            'NEW PRICE' => '123',
+            'FORM'      => '=IFERROR(((E4-D4)/D4),"")'
+        ];
+
+        $totals = [
+            'CUSIP'     => 'ABC',
+            'DATE'      => '2023-01-01',
+            'ACTION'    => '99',
+            'PRICE'     => '222.02',
+            'NEW PRICE' => '987',
+            'FORM'      => '=IFERROR(((E4-D4)/D4),"")'
+        ];
+
+
+        $testStyle1 =
+            [ 'font'      => [
+                'bold' => TRUE,
+            ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+                ],
+                'borders'   => [
+                    'top' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ],
+                ],
+                'fill'      => [
+                    'fillType'   => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                    'rotation'   => 90,
+                    'startColor' => [
+                        'argb' => 'A0A0A0',
+                    ],
+                    'endColor'   => [
+                        'argb' => 'FFFFFF',
+                    ],
+                ],
+            ];
+
+        $testStyle2 =
+            [ 'font'      => [
+                'bold' => TRUE,
+            ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders'   => [
+                    'top' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_DASHDOT,
+                    ],
+                ],
+                'fill'      => [
+                    'fillType'   => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                    'rotation'   => 45,
+                    'startColor' => [
+                        'argb' => 'CCCCCC',
+                    ],
+                    'endColor'   => [
+                        'argb' => 'FF0000',
+                    ],
+                ],
+            ];
+
+        $testStyle3 =
+            [ 'font'      => [
+                'bold' => TRUE,
+            ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                ],
+                'borders'   => [
+                    'top' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                    ],
+                ],
+                'fill'      => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+
+                    'color' => [
+                        'argb' => 'FFFF00',
+                    ],
+
+                ],
+            ];
+
+        $options         = [];
+        $columnDataTypes = [
+            'CUSIP'     => DataType::TYPE_STRING,
+            'PRICE'     => DataType::TYPE_NUMERIC,
+            'NEW PRICE' => DataType::TYPE_NUMERIC,
+            'FORM'      => DataType::TYPE_FORMULA
+        ];
+        $styles          = [
+            'CUSIP'   => $testStyle1,
+            'ACTION'  => $testStyle2,
+            'CUSIP:*' => $testStyle3,
+            'DATE:4'  => $testStyle1,
+        ];
+        $customNumberFormats = [
+            'PRICE'     => Excel::FORMAT_NUMERIC,
+            'NEW PRICE' => Excel::FORMAT_NUMERIC,
+            'FORM'      => Excel::FORMAT_NUMERIC
+        ];
+
+        $freezeHeader = true;
+
+
+        $columnsWithCustomWidths = [
+            'PRICE' => 25,
+            'NEW PRICE' => 50,
+            'FORM' => 100
+        ];
+
+        $workbook['first sheet'] = [];
+        $workbook['first sheet']['rows'] = $rows;
+        $workbook['first sheet']['totals'] = $totals;
+        $workbook['first sheet']['columnDataTypes'] = $columnDataTypes;
+        $workbook['first sheet']['columnsWithCustomNumberFormats'] = $customNumberFormats;
+        $workbook['first sheet']['columnsWithCustomWidths'] = $columnsWithCustomWidths;
+        $workbook['first sheet']['styles'] = $styles;
+        $workbook['first sheet']['freezeHeader'] = $freezeHeader;
+
+        $workbook['second sheet'] = [];
+        $workbook['second sheet']['rows'] = $rows2;
+        $workbook['second sheet']['totals'] = $totals2;
+        $workbook['second sheet']['columnDataTypes'] = $columnDataTypes;
+        $workbook['second sheet']['columnsWithCustomNumberFormats'] = $customNumberFormats;
+        $workbook['second sheet']['columnsWithCustomWidths'] = $columnsWithCustomWidths;
+        $workbook['second sheet']['styles'] = $styles;
+        $workbook['second sheet']['freezeHeader'] = $freezeHeader;
+
+        $file = $this->pathToOutputDirectory . 'multisheet.xlsx';
+        $options = [];
+
+        $pathToFile = Excel::multiSheet( $file, $options, $workbook );
+
+//        $pathToFile = Excel::advanced( $rows,
+//            $totals,
+//            $sheetName,
+//            $this->pathToOutputFile,
+//            $options,
+//            $columnDataTypes,
+//            $customNumberFormats,
+//            $columnsWithCustomWidths,
+//            $styles,
+//            $freezeHeader);
+
+        $sheets = array_keys( $workbook );
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        $reader->setLoadSheetsOnly( $sheets );
 
 
         $spreadsheet = $reader->load( $pathToFile );
