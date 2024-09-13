@@ -116,16 +116,15 @@ class Excel {
 
                 $spreadsheet->setActiveSheetIndex( $activeSheetIndex );
 
-
                 self::setOrientationLandscape( $spreadsheet );
-                self::setHeaderRow( $spreadsheet, $sheet['rows'], $sheet['columnsWithCustomWidths'] );
+                self::setHeaderRow( $spreadsheet, $sheet['rows'], $sheet['columnsWithCustomWidths'], $activeSheetIndex );
                 self::setColumnsThatShouldBeNumbers( $numeric_columns, $sheet['rows'] );
                 self::setColumnsThatShouldBeFormulas( $formulaic_columns, $sheet['rows'] );
                 self::setColumnsWithCustomNumberFormats( $sheet['columnsWithCustomNumberFormats'], $sheet['rows'] );
                 self::setRows( $spreadsheet, $sheet['rows'], $activeSheetIndex );
                 self::setFooterTotals( $spreadsheet, $sheet['totals'], $activeSheetIndex );
-                self::setWorksheetTitle( $spreadsheet, $sheetName );
                 self::setStyles( $spreadsheet, $sheet['rows'], $sheet['styles'], $activeSheetIndex );
+                self::setWorksheetTitle( $spreadsheet, $sheetName );
                 self::freezeHeader( $spreadsheet, $sheet['freezeHeader'] );
                 $activeSheetIndex++;
             }
@@ -872,7 +871,7 @@ class Excel {
      * @param       $spreadsheet
      * @param array $rows
      */
-    protected static function setHeaderRow( &$spreadsheet, $rows = [], $columnsWithCustomWidths = [] ) {
+    protected static function setHeaderRow( &$spreadsheet, $rows = [], $columnsWithCustomWidths = [], $activeSheetIndex = 0 ) {
 
         // I guess you want to create a blank spreadsheet. Go right ahead.
         if ( empty( $rows ) ):
@@ -884,10 +883,10 @@ class Excel {
         foreach ( $rows[ 0 ] as $field => $value ) {
 
 
-            $spreadsheet->setActiveSheetIndex( 0 )
+            $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
                         ->setCellValueExplicit( $startChar . '1', $field, DataType::TYPE_STRING );
 
-            $spreadsheet->setActiveSheetIndex( 0 )
+            $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
                         ->getStyle( $startChar . '1' )
                         ->applyFromArray( self::$headerStyleArray );
 
@@ -896,10 +895,10 @@ class Excel {
                             ->getColumnDimension( $startChar )
                             ->setWidth( $columnsWithCustomWidths[ $field ] );
             else :
-                $spreadsheet->setActiveSheetIndex( 0 )->getColumnDimension( $startChar )->setAutoSize( TRUE );
+                $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->getColumnDimension( $startChar )->setAutoSize( TRUE );
             endif;
 
-            $spreadsheet->setActiveSheetIndex( 0 )->getStyle( $startChar . '1' )->getAlignment()->setWrapText( TRUE );
+            $spreadsheet->setActiveSheetIndex( $activeSheetIndex )->getStyle( $startChar . '1' )->getAlignment()->setWrapText( TRUE );
             $startChar++;
         }
     }
@@ -908,6 +907,8 @@ class Excel {
     /**
      * @param $spreadsheet
      * @param $rows
+     * @param $activeSheetIndex
+     * @return void
      */
     protected static function setRows( &$spreadsheet, $rows, $activeSheetIndex = 0 ) {
         if ( empty( $rows ) ):
