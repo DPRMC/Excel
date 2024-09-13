@@ -27,7 +27,22 @@ class Excel {
     const CELL_ADDRESS_TYPE_ALL_ROWS    = 'cell_address_type_all_rows';
     const CELL_ADDRESS_TYPE_SINGLE_CELL = 'cell_address_type_single_cell';
 
-    /**
+    const rows = 'rows';
+
+    const columnsWithCustomWidths = 'columnsWithCustomWidths';
+
+    const columnDataTypes = 'columnDataTypes';
+
+    const columnsWithCustomNumberFormats = 'columnsWithCustomNumberFormats';
+
+    const totals = 'totals';
+
+    const styles = 'styles';
+
+    const freezeHeader = 'freezeHeader';
+
+
+        /**
      * @var string
      */
     static $title = 'Default Title';
@@ -101,7 +116,7 @@ class Excel {
             foreach( $sheets as $sheetName => $sheet ) {
                 $numeric_columns   = [];
                 $formulaic_columns = [];
-                foreach ( $sheet['columnDataTypes'] as $column_name => $data_type ) :
+                foreach ( $sheet[self::columnDataTypes] as $column_name => $data_type ) :
                     if ( $data_type === DataType::TYPE_NUMERIC ) :
                         $numeric_columns[] = $column_name;
                     endif;
@@ -117,15 +132,15 @@ class Excel {
                 $spreadsheet->setActiveSheetIndex( $activeSheetIndex );
 
                 self::setOrientationLandscape( $spreadsheet );
-                self::setHeaderRow( $spreadsheet, $sheet['rows'], $sheet['columnsWithCustomWidths'], $activeSheetIndex );
-                self::setColumnsThatShouldBeNumbers( $numeric_columns, $sheet['rows'] );
-                self::setColumnsThatShouldBeFormulas( $formulaic_columns, $sheet['rows'] );
-                self::setColumnsWithCustomNumberFormats( $sheet['columnsWithCustomNumberFormats'], $sheet['rows'] );
-                self::setRows( $spreadsheet, $sheet['rows'], $activeSheetIndex );
-                self::setFooterTotals( $spreadsheet, $sheet['totals'], $activeSheetIndex );
-                self::setStyles( $spreadsheet, $sheet['rows'], $sheet['styles'], $activeSheetIndex );
+                self::setHeaderRow( $spreadsheet, $sheet[self::rows], $sheet[self::columnsWithCustomWidths], $activeSheetIndex );
+                self::setColumnsThatShouldBeNumbers( $numeric_columns, $sheet[self::rows] );
+                self::setColumnsThatShouldBeFormulas( $formulaic_columns, $sheet[self::rows] );
+                self::setColumnsWithCustomNumberFormats( $sheet[self::columnsWithCustomNumberFormats], $sheet[self::rows] );
+                self::setRows( $spreadsheet, $sheet[self::rows], $activeSheetIndex );
+                self::setFooterTotals( $spreadsheet, $sheet[self::totals], $activeSheetIndex );
+                self::setStyles( $spreadsheet, $sheet[self::rows], $sheet[self::styles], $activeSheetIndex );
                 self::setWorksheetTitle( $spreadsheet, $sheetName );
-                self::freezeHeader( $spreadsheet, $sheet['freezeHeader'] );
+                self::freezeHeader( $spreadsheet, $sheet[self::freezeHeader] );
                 $activeSheetIndex++;
             }
             self::writeSpreadsheet( $spreadsheet, $path );
