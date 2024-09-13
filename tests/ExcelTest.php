@@ -51,7 +51,7 @@ class ExcelTest extends TestCase {
         array_shift( $files ); // ..
         foreach ( $files as $file ):
             if ( '.gitignore' != $file ):
-                //unlink( $this->pathToOutputDirectory . $file );
+                unlink( $this->pathToOutputDirectory . $file );
             endif;
         endforeach;
     }
@@ -620,7 +620,7 @@ class ExcelTest extends TestCase {
         $workbook['second sheet']['styles'] = $styles;
         $workbook['second sheet']['freezeHeader'] = $freezeHeader;
 
-        $file = $this->pathToOutputDirectory . 'multisheet.xlsx';
+        $file = $this->pathToOutputFile;
         $options = [];
 
         $pathToFile = Excel::multiSheet( $file, $options, $workbook );
