@@ -112,6 +112,101 @@ $freezeHeader = TRUE;
 $pathToFile = Excel::advanced( $rows, $totals, $sheetName, $pathToFile, $options, $columnDataTypes, $columnsWithCustomNumberFormats, $columnsWithCustomWidths, $styles, $freezeHeader );
 ```
 
+## Usage: Create a Spreadsheet with multiple sheets
+A multidimensional associative array is used to create a workbook with multiple sheets.  Each key of the multidimensional array will represent a new sheet within the Workbook. Each value of the multidimensional array follows the formatting of the advanced sheet shown in the example above.
+
+```php
+$pathToFile = '/outputFile.xlsx';
+$options = [];
+
+$workbook['first sheet'] = [
+    'rows'                           => [], // A multidimensional array with each item representing a row on the sheet
+    'totals'                         => [], 
+    'columnDataTypes'                => [],
+    'columnsWithCustomNumberFormats' => [],
+    'columnsWithCustomWidths'        => [],
+    'styles'                         => [],
+    'freezeHeader'                   => TRUE // A boolean value  
+];
+
+$workbook['first sheet']['rows'][0] = [
+    'CUSIP'     => '123456789',
+    'DATE'      => '2024-01-01',
+    'ACTION'    => 'BUY',
+    'PRICE'     => '123.456',
+    'QUANTITY'  => '1'
+];
+
+$workbook['first sheet']['rows'][1] = [
+    'CUSIP'     => '123456789',
+    'DATE'      => '2024-09-01',
+    'ACTION'    => 'SELL',
+    'PRICE'     => '123.456',
+    'QUANTITY'  => '1'
+];
+
+$workbook['first sheet']['totals'] = [
+    'CUSIP'     => '123456789',
+    'DATE'      => '2024-09-17',
+    'ACTION'    => '',
+    'PRICE'     => '123.456',
+    'QUANTITY'  => '0'
+];
+
+$workbook['first sheet']['columnDataTypes'] = [
+    'CUSIP'     => DataType::TYPE_STRING,
+    'ACTION'    => DataType::TYPE_STRING,
+    'PRICE'     => DataType::TYPE_NUMERIC,
+    'QUANTITY'  => DataType::TYPE_NUMERIC
+];
+
+$workbook['first sheet']['columnsWithCustomNumberFormats'] = [
+    'PRICE'     => Excel::FORMAT_NUMERIC,
+    'QUANTITY'  => Excel::FORMAT_NUMERIC
+];
+
+$workbook['first sheet']['columnsWithCustomWidths'] = [
+    'CUSIP'    => 50,
+    'PRICE'    => 50,
+    'ACTION'   => 25,
+    'QUANTITY' => 25
+];
+
+$workbook['first sheet']['styles'] = [
+    'CUSIP' => [
+        'font' => ['bold' => TRUE]
+    ]            
+];
+
+$workbook['second sheet'] = [];
+$workbook['second sheet']['rows'][0] = [
+    'CUSIP' => '987654321',
+    'NAV'   => '1234.56'
+];
+$workbook['second sheet']['rows'][1] = [
+    'CUSIP' => 'ABCDEFGHI',
+    'NAV'   => '6543.21'
+];
+
+$workbook['second sheet']['totals'] = [];
+$workbook['second sheet']['columnDataTypes'] = [
+    'CUSIP' => DataType::TYPE_STRING,
+    'NAV'   => DataType::TYPE_NUMERIC
+];
+$workbook['second sheet']['columnsWithCustomNumberFormats'] = ['NAV' => Excel::FORMAT_NUMERIC];
+$workbook['second sheet']['columnsWithCustomWidths'] = [];
+$workbook['second sheet']['styles'] = [
+    'CUSIP' => [
+        'font' => ['bold' => TRUE]
+    ],
+    'NAV' => [
+        'font' => ['italic' => TRUE]  
+    ]
+];                   
+$workbook['second sheet']['freezeHeader'] = FALSE;
+
+$pathToFile = Excel::multiSheet( $pathToFile, $options, $workbook );
+```
 ## Usage: Reading a Spreadsheet into a PHP Array
 Pass in the path to an XLSX spreadsheet and a sheet name, and this method will return an associative array.
 ```php
