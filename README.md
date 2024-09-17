@@ -112,7 +112,7 @@ $freezeHeader = TRUE;
 $pathToFile = Excel::advanced( $rows, $totals, $sheetName, $pathToFile, $options, $columnDataTypes, $columnsWithCustomNumberFormats, $columnsWithCustomWidths, $styles, $freezeHeader );
 ```
 
-## Usage: Create a Spreadsheet with multiple sheets
+## Usage: Create a Workbook with multiple sheets
 A multidimensional associative array is used to create a workbook with multiple sheets.  Each key of the multidimensional array will represent a new sheet within the Workbook. Each value of the multidimensional array follows the formatting of the advanced sheet shown in the example above.
 
 ```php
