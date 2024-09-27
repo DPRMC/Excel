@@ -126,7 +126,7 @@ $workbook['first sheet'] = [
     'columnsWithCustomNumberFormats' => [],
     'columnsWithCustomWidths'        => [],
     'styles'                         => [],
-    'freezeHeader'                   => TRUE // A boolean value  
+    'freezeHeader'                   => TRUE // A boolean value, defaults to true
 ];
 
 $workbook['first sheet']['rows'][0] = [
@@ -204,6 +204,15 @@ $workbook['second sheet']['styles'] = [
     ]
 ];                   
 $workbook['second sheet']['freezeHeader'] = FALSE;
+$workbook['third sheet'] = [];
+$workbook['third sheet']['rows'][0] = [
+    'CUSIP' => '000111222',
+    'NAV'   => '56.78'
+];
+$workbook['third sheet']['rows'][1] = [
+    'CUSIP' => 'AAABBBCCC',
+    'NAV'   => '111'
+];
 
 $pathToFile = Excel::multiSheet( $pathToFile, $options, $workbook );
 ```

@@ -535,6 +535,16 @@ class ExcelTest extends TestCase {
         ];
         $workbook['second sheet']['freezeHeader'] = FALSE;
 
+        $workbook['third sheet'] = [];
+        $workbook['third sheet']['rows'][0] = [
+            'CUSIP' => '000111222',
+            'NAV'   => '56.78'
+        ];
+        $workbook['third sheet']['rows'][1] = [
+            'CUSIP' => 'AAABBBCCC',
+            'NAV'   => '111'
+        ];
+
         $pathToFile = Excel::multiSheet( $pathToOutputfile, $options, $workbook );
         $sheets = array_keys( $workbook );
         $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
