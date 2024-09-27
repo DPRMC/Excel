@@ -113,7 +113,7 @@ class Excel {
             self::setOptions( $spreadsheet, $options );
 
             $activeSheetIndex = 0;
-            foreach( $sheets as $sheetName => $sheet ) {
+            foreach( $sheets as $sheetName => $sheet ) :
                 $numeric_columns   = [];
                 $formulaic_columns = [];
                 foreach ( $sheet[self::columnDataTypes] as $column_name => $data_type ) :
@@ -132,17 +132,27 @@ class Excel {
                 $spreadsheet->setActiveSheetIndex( $activeSheetIndex );
 
                 self::setOrientationLandscape( $spreadsheet );
-                self::setHeaderRow( $spreadsheet, $sheet[self::rows], $sheet[self::columnsWithCustomWidths], $activeSheetIndex );
-                self::setColumnsThatShouldBeNumbers( $numeric_columns, $sheet[self::rows] );
-                self::setColumnsThatShouldBeFormulas( $formulaic_columns, $sheet[self::rows] );
-                self::setColumnsWithCustomNumberFormats( $sheet[self::columnsWithCustomNumberFormats], $sheet[self::rows] );
-                self::setRows( $spreadsheet, $sheet[self::rows], $activeSheetIndex );
-                self::setFooterTotals( $spreadsheet, $sheet[self::totals], $activeSheetIndex );
-                self::setStyles( $spreadsheet, $sheet[self::rows], $sheet[self::styles], $activeSheetIndex );
+
+                $rows                           = $sheet[self::rows] ?? [];
+                $columnsWithCustomWidths        = $sheet[self::columnsWithCustomWidths] ?? [];
+                $columnsWithCustomNumberFormats = $sheet[self::columnsWithCustomNumberFormats] ?? [];
+                $totals                         = $sheet[self::totals] ?? [];
+                $styles                         = $sheet[self::styles] ?? [];
+                $freezeHeader                   = $sheet[self::freezeHeader] ?? TRUE;
+
+                self::setHeaderRow( $spreadsheet, $rows, $columnsWithCustomWidths, $activeSheetIndex );
+                self::setColumnsThatShouldBeNumbers( $numeric_columns, $rows );
+                self::setColumnsThatShouldBeFormulas( $formulaic_columns, $rows );
+                self::setColumnsWithCustomNumberFormats( $columnsWithCustomNumberFormats, $rows );
+                self::setRows( $spreadsheet, $rows, $activeSheetIndex );
+                self::setFooterTotals( $spreadsheet, $totals, $activeSheetIndex );
+                self::setStyles( $spreadsheet, $rows, $styles, $activeSheetIndex );
                 self::setWorksheetTitle( $spreadsheet, $sheetName );
-                self::freezeHeader( $spreadsheet, $sheet[self::freezeHeader] );
+                self::freezeHeader( $spreadsheet, $freezeHeader );
                 $activeSheetIndex++;
-            }
+            endforeach;
+
+            $spreadsheet->setActiveSheetIndex( 0 );
             self::writeSpreadsheet( $spreadsheet, $path );
 
         } catch ( Exception $e ) {
@@ -380,7 +390,7 @@ class Excel {
      * @param bool             $returnCellRef
      *
      * @return array
-     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Exception|Exception
      */
     public static function sheetToArray( string      $path,
                                                      $sheetName = NULL,
@@ -417,8 +427,19 @@ class Excel {
             $reader->setReadFilter( $readFilter );
         endif;
 
-        $spreadsheet = $reader->load( $path );
+        try {
+            $spreadsheet = $reader->load( $path );
+        } catch (Exception $e) {
+            if( str_contains( $e->getMessage(), 'You tried to set a sheet active by the out of bounds index:' ) ) :
+                throw new Exception( "Sheet '$sheetName' does not exist in '$path'." );
+            endif;
+
+            throw $e;
+
+        }
+
         //$spreadsheet->getDefaultStyle()->getNumberFormat()->setFormatCode(DataType::TYPE_STRING2);
+
 
         return $spreadsheet->setActiveSheetIndexByName( $sheetName )
                            ->toArray( $nullValue,
