@@ -42,7 +42,7 @@ class Excel {
     const freezeHeader = 'freezeHeader';
 
 
-        /**
+    /**
      * @var string
      */
     static $title = 'Default Title';
@@ -113,10 +113,10 @@ class Excel {
             self::setOptions( $spreadsheet, $options );
 
             $activeSheetIndex = 0;
-            foreach( $sheets as $sheetName => $sheet ) :
+            foreach ( $sheets as $sheetName => $sheet ) :
                 $numeric_columns   = [];
                 $formulaic_columns = [];
-                foreach ( $sheet[self::columnDataTypes] as $column_name => $data_type ) :
+                foreach ( $sheet[ self::columnDataTypes ] as $column_name => $data_type ) :
                     if ( $data_type === DataType::TYPE_NUMERIC ) :
                         $numeric_columns[] = $column_name;
                     endif;
@@ -125,7 +125,7 @@ class Excel {
                     endif;
                 endforeach;
 
-                if( 0 < $activeSheetIndex ) :
+                if ( 0 < $activeSheetIndex ) :
                     $spreadsheet->createSheet( $activeSheetIndex );
                 endif;
 
@@ -133,12 +133,12 @@ class Excel {
 
                 self::setOrientationLandscape( $spreadsheet );
 
-                $rows                           = $sheet[self::rows] ?? [];
-                $columnsWithCustomWidths        = $sheet[self::columnsWithCustomWidths] ?? [];
-                $columnsWithCustomNumberFormats = $sheet[self::columnsWithCustomNumberFormats] ?? [];
-                $totals                         = $sheet[self::totals] ?? [];
-                $styles                         = $sheet[self::styles] ?? [];
-                $freezeHeader                   = $sheet[self::freezeHeader] ?? TRUE;
+                $rows                           = $sheet[ self::rows ] ?? [];
+                $columnsWithCustomWidths        = $sheet[ self::columnsWithCustomWidths ] ?? [];
+                $columnsWithCustomNumberFormats = $sheet[ self::columnsWithCustomNumberFormats ] ?? [];
+                $totals                         = $sheet[ self::totals ] ?? [];
+                $styles                         = $sheet[ self::styles ] ?? [];
+                $freezeHeader                   = $sheet[ self::freezeHeader ] ?? TRUE;
 
                 self::setHeaderRow( $spreadsheet, $rows, $columnsWithCustomWidths, $activeSheetIndex );
                 self::setColumnsThatShouldBeNumbers( $numeric_columns, $rows );
@@ -429,8 +429,8 @@ class Excel {
 
         try {
             $spreadsheet = $reader->load( $path );
-        } catch (Exception $e) {
-            if( str_contains( $e->getMessage(), 'You tried to set a sheet active by the out of bounds index:' ) ) :
+        } catch ( Exception $e ) {
+            if ( str_contains( $e->getMessage(), 'You tried to set a sheet active by the out of bounds index:' ) ) :
                 throw new Exception( "Sheet '$sheetName' does not exist in '$path'." );
             endif;
 
@@ -454,6 +454,7 @@ class Excel {
      * of adding the extension so the sheetToArray() method knows how to parse it.
      * Example Usage:
      * <form action="/test-up" method="POST"  enctype="multipart/form-data">
+     *
      * @csrf
      * <input type="file" name="myfile" />
      * <input type="submit" value="Submit">
@@ -474,13 +475,13 @@ class Excel {
      */
     public static function uploadToArray( \Illuminate\Http\UploadedFile $uploadedFile,
 
-                                                     $sheetName = NULL,
-                                         IReadFilter $readFilter = NULL,
-                                                     $nullValue = NULL,
-                                         bool        $calculateFormulas = TRUE,
-                                         bool        $formatData = FALSE,
-                                         bool        $returnCellRef = FALSE ): array {
-        $path    = $uploadedFile->getRealPath();
+                                                                        $sheetName = NULL,
+                                          IReadFilter                   $readFilter = NULL,
+                                                                        $nullValue = NULL,
+                                          bool                          $calculateFormulas = TRUE,
+                                          bool                          $formatData = FALSE,
+                                          bool                          $returnCellRef = FALSE ): array {
+        $path          = $uploadedFile->getRealPath();
         $fileExtension = $uploadedFile->getClientOriginalExtension();
         $fileExtension = strtolower( $fileExtension );
 
@@ -516,8 +517,6 @@ class Excel {
                                       $formatData,
                                       $returnCellRef );
     }
-
-
 
 
     /**
@@ -944,6 +943,7 @@ class Excel {
      * @param $spreadsheet
      * @param $rows
      * @param $activeSheetIndex
+     *
      * @return void
      */
     protected static function setRows( &$spreadsheet, $rows, $activeSheetIndex = 0 ) {
@@ -958,14 +958,14 @@ class Excel {
                 $cellCoordinate = $startChar . $iProperIndex;
 
                 if ( self::shouldBeNumeric( $startChar ) ):
-                    self::setNumericCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                    self::setNumericCell(                                                           $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
                         self::$columnsWithCustomNumberFormats[ $startChar ] : self::FORMAT_NUMERIC, $activeSheetIndex );
 
                 elseif ( self::shouldBeFormulaic( $startChar ) ):
-                    self::setFormulaicCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                    self::setFormulaicCell(                                       $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
                         self::$columnsWithCustomNumberFormats[ $startChar ] : '', $activeSheetIndex );
                 else :
-                    self::setTextCell( $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
+                    self::setTextCell(                                            $spreadsheet, $cellCoordinate, $value, self::hasCustomNumberFormat( $startChar ) ?
                         self::$columnsWithCustomNumberFormats[ $startChar ] : '', $activeSheetIndex );
                 endif;
 
@@ -1057,11 +1057,11 @@ class Excel {
                 foreach ( $value as $name => $childValue ):
                     $cell_coordinate = $columnLetter . $multiDimensionalFooterRow;
                     if ( self::shouldBeNumeric( $columnLetter ) ):
-                        self::setNumericCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
+                        self::setNumericCell(                                            $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
                             self::$columnsWithCustomNumberFormats[ $columnLetter ] : '', $activeSheetIndex );
 
                     elseif ( self::shouldBeFormulaic( $columnLetter ) ):
-                        self::setFormulaicCell( $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
+                        self::setFormulaicCell(                                          $spreadsheet, $cell_coordinate, $childValue, self::hasCustomNumberFormat( $columnLetter ) ?
                             self::$columnsWithCustomNumberFormats[ $columnLetter ] : '', $activeSheetIndex );
 
                     else:
@@ -1073,11 +1073,11 @@ class Excel {
             else:
                 $cell_coordinate = $columnLetter . $footerRowStart;
                 if ( self::shouldBeNumeric( $columnLetter ) ) :
-                    self::setNumericCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
+                    self::setNumericCell(                                            $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
                         self::$columnsWithCustomNumberFormats[ $columnLetter ] : '', $activeSheetIndex );
 
                 elseif ( self::shouldBeFormulaic( $columnLetter ) ) :
-                    self::setFormulaicCell( $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
+                    self::setFormulaicCell(                                          $spreadsheet, $cell_coordinate, $value, self::hasCustomNumberFormat( $columnLetter ) ?
                         self::$columnsWithCustomNumberFormats[ $columnLetter ] : '', $activeSheetIndex );
 
 
@@ -1225,6 +1225,11 @@ class Excel {
      * @param int    $activeSheetIndex
      */
     protected static function setNumericCell( &$spreadsheet, $cellCoordinate, $value, $customNumberFormat = '', $activeSheetIndex = 0 ) {
+
+        if ( is_string( $value ) && empty( $value ) ):
+            $value = NULL;
+        endif;
+
         $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
                     ->setCellValueExplicit( $cellCoordinate, $value, is_null( $value ) ? DataType::TYPE_NULL :
                         DataType::TYPE_NUMERIC );
@@ -1298,10 +1303,10 @@ class Excel {
      *
      * @return \Carbon\Carbon|null
      */
-    public static function excelDateToCarbon( string $excelDate = null, string $timezone = null ): ?Carbon {
+    public static function excelDateToCarbon( string $excelDate = NULL, string $timezone = NULL ): ?Carbon {
         $value = trim( $excelDate );
         if ( empty( $value ) ):
-            return null;
+            return NULL;
         else:
             $timestamp  = (int)SharedDateHelper::excelToTimestamp( $value );
             $carbonDate = Carbon::createFromTimestamp( $timestamp, $timezone );
