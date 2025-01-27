@@ -452,7 +452,7 @@ class ExcelTest extends TestCase {
         $workbook['first sheet'] = [
             'rows'                           => [], // A multidimensional array with each item representing a row on the sheet
             'totals'                         => [],
-            'columnDataTypes'                => [],
+            Excel::columnDataTypes                => [],
             'columnsWithCustomNumberFormats' => [],
             'columnsWithCustomWidths'        => [],
             'styles'                         => [],
@@ -544,6 +544,7 @@ class ExcelTest extends TestCase {
             'CUSIP' => 'AAABBBCCC',
             'NAV'   => '111'
         ];
+        $workbook['third sheet']['columnDataTypes'] = [];
 
         $pathToFile = Excel::multiSheet( $pathToOutputfile, $options, $workbook );
         $sheets = array_keys( $workbook );
