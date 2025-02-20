@@ -22,11 +22,14 @@ class Style {
 
 
     /**
-     * @param $spreadsheet
+     * @param       $spreadsheet
      * @param array $rows
      * @param array $styles
+     *
+     * @return void
+     * @throws \Exception
      */
-    public static function setStyles( &$spreadsheet, array $rows = [], array $styles = [] ) {
+    public static function setStyles( &$spreadsheet, array $rows = [], array $styles = [] ): void {
         // I guess you want to create a blank spreadsheet. Go right ahead.
         if ( empty( $rows ) ):
             return;
