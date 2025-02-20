@@ -55,10 +55,7 @@ class Markup {
                         continue;
                     endif;
 
-
                     self::translateMarkupInCell( $cell, $styles );
-
-                    //echo "Cell " . $col . $row . ": " . $value . "\n";
 
                     //$spreadsheet->getSheet( $i )->setCellValueExplicit( $col . $row, $cell->getValue(), DataType::TYPE_STRING );
                     $spreadsheet->getSheet( $i )->getCell( $col . $row )->setValue( $cell );
@@ -70,13 +67,14 @@ class Markup {
 
     /**
      * @param string $filePath
+     * @param string $newFilePath
      * @param array  $styles
      *
      * @return void
      * @throws \Exception
      */
     public static function translateMarkupOfFile( string $filePath, string $newFilePath, array $styles = [] ): void {
-        $spreadsheet = IOFactory::load( $filePath ); // Replace with your file path
+        $spreadsheet = IOFactory::load( $filePath );
 
         self::translateMarkupOfSpreadsheet( $spreadsheet, $styles );
 
@@ -100,6 +98,16 @@ class Markup {
 
         $parts = self::splitHTMLString( $value );
 
+
+        $spreadsheet->setActiveSheetIndex( $activeSheetIndex )
+                    ->getStyle( $startChar . '1' )
+                    ->applyFromArray( self::$headerStyleArray );
+
+
+
+
+
+
         $objRichText = new RichText();
 
         foreach ( $parts as $i => $string ):
@@ -120,7 +128,6 @@ class Markup {
                         foreach ( $stylesToApply as $style => $value ):
                             switch ( $style ):
                                 case self::BOLD:
-                                    $objTextWithStyle->getFont()->setName("Times New Roman");
                                     $objTextWithStyle->getFont()->setBold( TRUE );
                                     break;
 
